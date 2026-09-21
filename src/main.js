@@ -471,21 +471,10 @@ async function openProfile() {
 }
 
 async function loadProfile(userId) {
-  const { data, error } = await supabase
-    .from('garage_cars')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Garaj araçları alınamadı:', error);
-    return;
-  }
-
-  console.log('Garaj araçları:', data);
-}
-
-  const { data, error } = await supabase
+  const {
+    data,
+    error
+  } = await supabase
     .from('profiles')
     .select('username, avatar_url, created_at')
     .eq('id', userId)
@@ -500,8 +489,23 @@ async function loadProfile(userId) {
     profileUsername.textContent = data.username;
     profileAvatar.textContent = data.username.charAt(0).toUpperCase();
   }
-}
 
+  await loadGarageCars(userId);
+}
+async function loadGarageCars(userId) {
+  const { data, error } = await supabase
+    .from('garage_cars')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Garaj araçları alınamadı:', error);
+    return;
+  }
+
+  console.log('Garaj araçları:', data);
+}
 function closeProfile() {
   profileScreen.classList.remove('show');
 }
