@@ -471,6 +471,19 @@ async function openProfile() {
 }
 
 async function loadProfile(userId) {
+  const { data, error } = await supabase
+    .from('garage_cars')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Garaj araçları alınamadı:', error);
+    return;
+  }
+
+  console.log('Garaj araçları:', data);
+}
 
   const { data, error } = await supabase
     .from('profiles')
