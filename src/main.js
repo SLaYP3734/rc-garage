@@ -404,6 +404,7 @@ async function loadProfile(userId) {
 
 function closeProfile() {
   profileScreen.classList.remove('show');
+  homeScreen.style.display = '';
 }
 
 profileBtn.addEventListener('click', openProfile);
