@@ -408,7 +408,9 @@ function closeProfile() {
 
 profileBtn.addEventListener('click', openProfile);
 navProfile.addEventListener('click', openProfile);
-profileBack.addEventListener('click', closeProfile);
+profileBack.onclick = function () {
+  profileScreen.classList.remove('show');
+};
 
 profileLogout.addEventListener('click', async () => {
 
