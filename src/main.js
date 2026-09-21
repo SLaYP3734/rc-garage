@@ -171,15 +171,15 @@ document.querySelector('#app').innerHTML = `
 
   <style>
 
-    .profile-screen {
-      position: fixed;
-      inset: 0;
-      background: #101010;
-      z-index: 5000;
-      display: none;
-      overflow-y: auto;
-      color: white;
-    }
+  .profile-screen {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100%;
+  max-width: 600px;
+  transform: translateX(-50%);
+  background: #101010;
 
     .profile-screen.show {
       display: block;
