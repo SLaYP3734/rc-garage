@@ -360,6 +360,15 @@ document.querySelector('#app').innerHTML = `
 `;
 
 const profileScreen = document.querySelector('#profileScreen');
+const addGarageCar = document.querySelector('#addGarageCar');
+const emptyGarageAdd = document.querySelector('#emptyGarageAdd');
+
+function openGarageAdd() {
+  alert('Araç ekleme ekranı birazdan hazır olacak 🚗');
+}
+
+addGarageCar.addEventListener('click', openGarageAdd);
+emptyGarageAdd.addEventListener('click', openGarageAdd);
 const homeScreen = document.querySelector('#homeScreen');
 const profileBtn = document.querySelector('#profileBtn');
 const navProfile = document.querySelector('#navProfile');
