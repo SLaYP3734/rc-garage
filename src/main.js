@@ -504,9 +504,10 @@ async function loadGarageCars(userId) {
     return;
   }
 
+{
   console.log('Garaj araçları:', data);
-  const garageEmpty = document.querySelector('.empty-garage');
-
+ const garageEmpty = document.querySelector('.empty-garage');
+ }
 if (data.length > 0) {
   garageEmpty.innerHTML = `
     <div class="garage-car-icon">🏎️</div>
