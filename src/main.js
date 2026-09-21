@@ -507,8 +507,6 @@ async function loadGarageCars(userId) {
   console.log('Garaj araçları:', data);
   const garageSection = document.querySelector('.garage-section');
 
-const emptyGarage = garageSection.querySelector('.empty-garage');
-
 if (data && data.length > 0) {
   emptyGarage.innerHTML = data.map(car => `
     <div class="garage-car">
@@ -525,6 +523,7 @@ if (data && data.length > 0) {
     </div>
   `).join('');
 }
+
 function closeProfile() {
   profileScreen.classList.remove('show');
 }
