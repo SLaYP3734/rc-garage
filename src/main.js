@@ -379,7 +379,7 @@ async function openProfile() {
 
   await loadProfile(user.id);
 
-  homeScreen.classList.add('hidden');
+  homeScreen.style.display = 'none';
   profileScreen.classList.add('show');
 }
 
@@ -404,8 +404,8 @@ async function loadProfile(userId) {
 
 function closeProfile() {
   profileScreen.classList.remove('show');
-  homeScreen.classList.remove('hidden');
 }
+
 profileBtn.addEventListener('click', openProfile);
 navProfile.addEventListener('click', openProfile);
 profileBack.addEventListener('click', closeProfile);
