@@ -364,7 +364,83 @@ const addGarageCar = document.querySelector('#addGarageCar');
 const emptyGarageAdd = document.querySelector('#emptyGarageAdd');
 
 function openGarageAdd() {
-  alert('Araç ekleme ekranı birazdan hazır olacak 🚗');
+  const garageModal = document.createElement('div');
+
+  garageModal.className = 'garage-modal';
+
+  garageModal.innerHTML = `
+    <div class="garage-box">
+      <button class="garage-close">×</button>
+
+      <h2>🏎️ Aracını Ekle</h2>
+      <p>RC aracının bilgilerini garajına kaydet.</p>
+
+      <input id="garageBrand" type="text" placeholder="Marka (Traxxas, Arrma...)">
+      <input id="garageModel" type="text" placeholder="Model (Maxx, Kraton...)">
+      <input id="garageScale" type="text" placeholder="Ölçek (1/10, 1/8...)">
+      <input id="garageMotor" type="text" placeholder="Motor">
+      <input id="garageEsc" type="text" placeholder="ESC">
+      <input id="garageBattery" type="text" placeholder="Batarya">
+      <textarea id="garageNotes" placeholder="Araç hakkında notların..."></textarea>
+
+      <button id="saveGarageCar" class="garage-save">
+        🚗 Garaja Ekle
+      </button>
+
+      <p id="garageMessage" class="garage-message"></p>
+    </div>
+  `;
+
+  document.body.appendChild(garageModal);
+
+  garageModal.querySelector('.garage-close').onclick = () => {
+    garageModal.remove();
+  };
+
+  document.getElementById('saveGarageCar').onclick = async () => {
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      garageModal.remove();
+      openAuth();
+      return;
+    }
+
+    const brand = document.getElementById('garageBrand').value.trim();
+    const model = document.getElementById('garageModel').value.trim();
+
+    if (!brand || !model) {
+      document.getElementById('garageMessage').textContent =
+        'Marka ve model zorunlu.';
+      return;
+    }
+
+    const { error } = await supabase
+      .from('garage_cars')
+      .insert({
+        user_id: user.id,
+        brand,
+        model,
+        scale: document.getElementById('garageScale').value.trim(),
+        motor: document.getElementById('garageMotor').value.trim(),
+        esc: document.getElementById('garageEsc').value.trim(),
+        battery: document.getElementById('garageBattery').value.trim(),
+        notes: document.getElementById('garageNotes').value.trim()
+      });
+
+    if (error) {
+      console.error(error);
+      document.getElementById('garageMessage').textContent =
+        'Araç kaydedilemedi. Tekrar deneyelim.';
+      return;
+    }
+
+    garageModal.remove();
+
+    await loadGarageCars(user.id);
+  };
 }
 
 addGarageCar.addEventListener('click', openGarageAdd);
