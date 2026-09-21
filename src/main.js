@@ -504,10 +504,9 @@ async function loadGarageCars(userId) {
     return;
   }
 
-{
   console.log('Garaj araçları:', data);
  const garageEmpty = document.querySelector('.empty-garage');
- }
+
 if (data.length > 0) {
   garageEmpty.innerHTML = `
     <div class="garage-car-icon">🏎️</div>
@@ -519,6 +518,7 @@ if (data.length > 0) {
       ${data[0].battery || ''}
     </small>
   `;
+}
 }
 function closeProfile() {
   profileScreen.classList.remove('show');
