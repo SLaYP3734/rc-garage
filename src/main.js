@@ -505,7 +505,7 @@ async function loadGarageCars(userId) {
   }
 
   console.log('Garaj araçları:', data);
-  
+  }
 function closeProfile() {
   profileScreen.classList.remove('show');
 }
