@@ -201,3 +201,121 @@
     font-size: 23px;
   }
 }
+
+.garage-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-sizing: border-box;
+}
+
+.garage-box {
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 28px 22px 22px;
+  box-sizing: border-box;
+  background: #151515;
+  border: 1px solid #292929;
+  border-radius: 20px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.65);
+  position: relative;
+}
+
+.garage-box h2 {
+  margin: 0 0 6px;
+  color: white;
+  font-size: 23px;
+}
+
+.garage-box > p {
+  margin: 0 0 22px;
+  color: #888;
+  font-size: 14px;
+}
+
+.garage-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: #222;
+  color: #aaa;
+  font-size: 23px;
+  cursor: pointer;
+}
+
+.garage-close:hover {
+  color: white;
+  background: #2b2b2b;
+}
+
+.garage-box input,
+.garage-box textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 11px;
+  padding: 0 14px;
+  border: 1px solid #303030;
+  border-radius: 11px;
+  outline: none;
+  background: #202020;
+  color: white;
+  font-size: 14px;
+}
+
+.garage-box input {
+  height: 48px;
+}
+
+.garage-box textarea {
+  min-height: 90px;
+  padding-top: 13px;
+  resize: vertical;
+}
+
+.garage-box input::placeholder,
+.garage-box textarea::placeholder {
+  color: #777;
+}
+
+.garage-box input:focus,
+.garage-box textarea:focus {
+  border-color: #ff6a00;
+}
+
+.garage-save {
+  width: 100%;
+  height: 50px;
+  margin-top: 5px;
+  border: 0;
+  border-radius: 11px;
+  background: #ff6a00;
+  color: white;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.garage-save:hover {
+  background: #ff791a;
+}
+
+.garage-message {
+  min-height: 18px;
+  margin: 10px 0 0 !important;
+  color: #ff8a3d !important;
+  text-align: center;
+  font-size: 13px !important;
+}
