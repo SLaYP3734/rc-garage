@@ -505,6 +505,7 @@ async function loadGarageCars(userId) {
   }
 
   console.log('Garaj araçları:', data);
+  document.querySelector('#garageCarCount').textContent = data.length;
  const garageEmpty = document.querySelector('.empty-garage');
 
 if (data.length > 0) {
