@@ -361,6 +361,7 @@ document.querySelector('#app').innerHTML = `
 
 const profileScreen = document.querySelector('#profileScreen');
 const homeScreen = document.querySelector('#homeScreen');
+const homeScreen = document.querySelector('#homeScreen');
 const profileBtn = document.querySelector('#profileBtn');
 const navProfile = document.querySelector('#navProfile');
 const profileBack = document.querySelector('#profileBack');
