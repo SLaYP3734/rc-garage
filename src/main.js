@@ -505,7 +505,20 @@ async function loadGarageCars(userId) {
   }
 
   console.log('Garaj araçları:', data);
-  }
+  const garageEmpty = document.querySelector('.empty-garage');
+
+if (data.length > 0) {
+  garageEmpty.innerHTML = `
+    <div class="garage-car-icon">🏎️</div>
+    <h3>${data[0].brand} ${data[0].model}</h3>
+    <p>${data[0].scale || ''}</p>
+    <small>
+      ${data[0].motor || ''} ·
+      ${data[0].esc || ''} ·
+      ${data[0].battery || ''}
+    </small>
+  `;
+}
 function closeProfile() {
   profileScreen.classList.remove('show');
 }
