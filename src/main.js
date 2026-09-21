@@ -172,6 +172,7 @@ document.querySelector('#app').innerHTML = `
   <style>
 
   .profile-screen {
+  display: none;
   position: fixed;
   top: 0;
   bottom: 0;
@@ -359,6 +360,7 @@ document.querySelector('#app').innerHTML = `
 `;
 
 const profileScreen = document.querySelector('#profileScreen');
+const homeScreen = document.querySelector('#homeScreen');
 const profileBtn = document.querySelector('#profileBtn');
 const navProfile = document.querySelector('#navProfile');
 const profileBack = document.querySelector('#profileBack');
@@ -410,6 +412,7 @@ profileBtn.addEventListener('click', openProfile);
 navProfile.addEventListener('click', openProfile);
 profileBack.onclick = function () {
   profileScreen.classList.remove('show');
+  homeScreen.style.display = '';
 };
 
 profileLogout.addEventListener('click', async () => {
