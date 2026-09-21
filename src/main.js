@@ -419,7 +419,9 @@ profileLogout.addEventListener('click', async () => {
 
   await supabase.auth.signOut();
 
-  closeProfile();
+  profileScreen.classList.remove('show');
+  homeScreen.style.display = '';
+
   updateUserState();
 
 });
