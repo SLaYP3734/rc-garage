@@ -130,7 +130,7 @@ document.querySelector('#app').innerHTML = `
         </div>
 
         <div>
-          <strong>0</strong>
+          <strong id="garageCarCount">0</strong>
           <span>Araç</span>
         </div>
 
