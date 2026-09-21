@@ -177,9 +177,12 @@ document.querySelector('#app').innerHTML = `
   bottom: 0;
   left: 50%;
   width: 100%;
-  max-width: 600px;
+  max-width: 430px;
   transform: translateX(-50%);
   background: #101010;
+  z-index: 100;
+  overflow-y: auto;
+}
 
     .profile-screen.show {
       display: block;
