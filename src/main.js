@@ -666,7 +666,3 @@ supabase.auth.onAuthStateChange(() => {
 
 updateAuthMode();
 updateUserState();
-
-.hidden {
-  display: none !important;
-}
