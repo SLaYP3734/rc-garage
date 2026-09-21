@@ -379,7 +379,7 @@ async function openProfile() {
 
   await loadProfile(user.id);
 
-  homeScreen.style.display = 'none';
+  homeScreen.classList.add('hidden');
   profileScreen.classList.add('show');
 }
 
@@ -404,8 +404,8 @@ async function loadProfile(userId) {
 
 function closeProfile() {
   profileScreen.classList.remove('show');
+  homeScreen.classList.remove('hidden');
 }
-
 profileBtn.addEventListener('click', openProfile);
 navProfile.addEventListener('click', openProfile);
 profileBack.addEventListener('click', closeProfile);
@@ -666,3 +666,7 @@ supabase.auth.onAuthStateChange(() => {
 
 updateAuthMode();
 updateUserState();
+
+.hidden {
+  display: none !important;
+}
