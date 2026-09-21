@@ -379,6 +379,7 @@ async function openProfile() {
 
   await loadProfile(user.id);
 
+  homeScreen.style.display = 'none';
   profileScreen.classList.add('show');
 }
 
