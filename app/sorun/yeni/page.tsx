@@ -17,7 +17,7 @@ export default function NewProblemPage() {
   const [title, setTitle] = useState('');
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
-  const [category, setCategory] = useState(CATEGORIES[0].value);
+  const [category, setCategory] = useState<string>(CATEGORIES[0].value);
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [message, setMessage] = useState('');
