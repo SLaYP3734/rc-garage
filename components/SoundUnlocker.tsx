@@ -3,9 +3,12 @@
 import { useEffect } from 'react';
 import { unlockNotificationSound } from '@/lib/notificationSound';
 
+<<<<<<< HEAD
 // Görünmez bir bileşen: kullanıcı sayfaya ilk kez dokunduğunda/tıkladığında
 // bildirim sesi sistemini "kilidini açar". Bu olmadan telefon tarayıcıları
 // arka planda otomatik çalan mesaj sesini sessizce engelliyor.
+=======
+>>>>>>> 291b4831e3517893e10dd462ce605f94cd306951
 export default function SoundUnlocker() {
   useEffect(() => {
     function handler() {

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Yeni bir mesaj geldiğinde çalınacak kısa "pling" sesi. Harici bir ses
 // dosyasına bağımlı olmasın diye tarayıcının kendi ses motoruyla
 // (Web Audio API) anlık olarak üretiliyor.
@@ -7,6 +8,8 @@
 // başlıyor). Bu yüzden aynı AudioContext'i saklayıp, kullanıcının ilk
 // dokunuşunda (tıklama/dokunma) "kilidini açıyoruz" — o andan sonra
 // arka planda (bir sayaçla) tetiklenen sesler de çalabiliyor.
+=======
+>>>>>>> 291b4831e3517893e10dd462ce605f94cd306951
 let sharedCtx: AudioContext | null = null;
 
 function getContext(): AudioContext | null {
@@ -17,7 +20,10 @@ function getContext(): AudioContext | null {
   return sharedCtx;
 }
 
+<<<<<<< HEAD
 // Kullanıcının sayfadaki ilk dokunuşunda/tıklamasında çağrılır.
+=======
+>>>>>>> 291b4831e3517893e10dd462ce605f94cd306951
 export function unlockNotificationSound() {
   const ctx = getContext();
   if (!ctx) return;
@@ -32,8 +38,11 @@ export function playNotificationSound() {
     if (!ctx) return;
 
     if (ctx.state === 'suspended') {
+<<<<<<< HEAD
       // Henüz kilidi açılmadıysa (kullanıcı hiç dokunmadıysa) tarayıcı
       // sesi çalmayabilir; yine de denemekte fayda var.
+=======
+>>>>>>> 291b4831e3517893e10dd462ce605f94cd306951
       ctx.resume().catch(() => {});
     }
 
