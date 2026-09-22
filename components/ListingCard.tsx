@@ -38,7 +38,9 @@ export default function ListingCard({ listing }: { listing: Listing }) {
                 : 'border-sky-500/30 bg-sky-500/15 text-sky-400'
             }`}
           >
-            {listing.status === 'sold' ? 'Satıldı' : CONDITION_LABEL[listing.condition]}
+            {listing.status === 'sold'
+              ? 'Satıldı'
+              : CONDITION_LABEL[listing.condition as 'yeni' | 'kullanilmis']}
           </span>
         </div>
 
