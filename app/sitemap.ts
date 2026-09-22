@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 
+<<<<<<< HEAD
 // Google'ın siteyi taramasını kolaylaştıran otomatik sitemap.xml.
 // Next.js bu dosyayı /sitemap.xml adresinde otomatik olarak yayınlar.
 // Bilinçli olarak @supabase/supabase-js kütüphanesi kullanılmıyor —
@@ -11,6 +12,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rc-garage-three.ver
 
 type ProblemRow = { slug: string; created_at: string };
 type ListingRow = { slug: string; created_at: string };
+=======
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rc-garage-three.vercel.app';
+
+type ProblemRow = { slug: string; created_at: string };
+>>>>>>> 87895f7deaf0272afb2c5d257ac7e8d34cf90462
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
