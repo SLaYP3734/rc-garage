@@ -1,11 +1,41 @@
 // Yeni bir mesaj geldiğinde çalınacak kısa "pling" sesi. Harici bir ses
 // dosyasına bağımlı olmasın diye tarayıcının kendi ses motoruyla
 // (Web Audio API) anlık olarak üretiliyor.
+//
+// Not: Telefon tarayıcıları (özellikle iPhone/Safari), kullanıcı sayfaya
+// hiç dokunmadan otomatik ses çalınmasını engelliyor ("suspended" durumda
+// başlıyor). Bu yüzden aynı AudioContext'i saklayıp, kullanıcının ilk
+// dokunuşunda (tıklama/dokunma) "kilidini açıyoruz" — o andan sonra
+// arka planda (bir sayaçla) tetiklenen sesler de çalabiliyor.
+let sharedCtx: AudioContext | null = null;
+
+function getContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+  if (!AudioCtx) return null;
+  if (!sharedCtx) sharedCtx = new AudioCtx();
+  return sharedCtx;
+}
+
+// Kullanıcının sayfadaki ilk dokunuşunda/tıklamasında çağrılır.
+export function unlockNotificationSound() {
+  const ctx = getContext();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') {
+    ctx.resume().catch(() => {});
+  }
+}
+
 export function playNotificationSound() {
   try {
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
+    const ctx = getContext();
+    if (!ctx) return;
+
+    if (ctx.state === 'suspended') {
+      // Henüz kilidi açılmadıysa (kullanıcı hiç dokunmadıysa) tarayıcı
+      // sesi çalmayabilir; yine de denemekte fayda var.
+      ctx.resume().catch(() => {});
+    }
 
     const playTone = (freq: number, start: number, duration: number) => {
       const osc = ctx.createOscillator();

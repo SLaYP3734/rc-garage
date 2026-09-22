@@ -1,0 +1,76 @@
+import Link from 'next/link';
+
+type Stats = {
+  problemCount: number;
+  solvedCount: number;
+  listingCount: number;
+  memberCount: number;
+};
+
+// Ana sayfanın en üstündeki karşılama şeridi. Sade bir liste yerine
+// siteye "canlı" ve topluluk hissi veren bir giriş — kaç sorunun
+// çözüldüğünü, kaç ilan olduğunu görmek, yeni bir ziyaretçiye burada
+// gerçek bir hareketlilik olduğunu anında gösteriyor.
+export default function HomeHero({ stats }: { stats: Stats }) {
+  return (
+    <div className="relative overflow-hidden border-b border-border px-4 pb-5 pt-6">
+      <div
+        className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full opacity-20 blur-3xl"
+        style={{ background: 'radial-gradient(circle, #ff6a00, transparent 70%)' }}
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -left-20 top-10 h-40 w-40 rounded-full opacity-10 blur-3xl"
+        style={{ background: 'radial-gradient(circle, #0ea5e9, transparent 70%)' }}
+        aria-hidden
+      />
+
+      <div className="relative">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide text-accent2">
+          🔧 Türkiye&apos;nin RC Atölyesi
+        </span>
+
+        <h1 className="mt-3 text-[21px] font-extrabold leading-tight">
+          Sorunu sor, <span className="text-accent">dakikalar içinde</span> çöz.
+        </h1>
+        <p className="mt-1.5 max-w-[320px] text-[13px] leading-relaxed text-muted">
+          Deneyimli RC&apos;cilerin cevapladığı sorular, Google&apos;da aranabilir — WhatsApp
+          grubunda kaybolmuyor.
+        </p>
+
+        <div className="mt-4 grid grid-cols-4 gap-2">
+          <StatTile value={stats.problemCount} label="Soru" />
+          <StatTile value={stats.solvedCount} label="Çözüldü" accent />
+          <StatTile value={stats.listingCount} label="İlan" />
+          <StatTile value={stats.memberCount} label="Üye" />
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <Link
+            href="/sorun/yeni"
+            className="flex-1 rounded-xl bg-accent px-3 py-2.5 text-center text-[13px] font-extrabold text-black"
+          >
+            + Sorun Sor
+          </Link>
+          <Link
+            href="/al-sat"
+            className="flex-1 rounded-xl border border-border bg-cardAlt px-3 py-2.5 text-center text-[13px] font-bold text-zinc-200"
+          >
+            🛒 Al / Sat
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatTile({ value, label, accent }: { value: number; label: string; accent?: boolean }) {
+  return (
+    <div className="rounded-xl border border-border bg-card/60 px-1.5 py-2 text-center">
+      <div className={`text-[15px] font-extrabold ${accent ? 'text-accent' : 'text-white'}`}>
+        {value}
+      </div>
+      <div className="mt-0.5 text-[10px] font-medium text-mutedDim">{label}</div>
+    </div>
+  );
+}

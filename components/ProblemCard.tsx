@@ -7,26 +7,31 @@ import StatusBadge from './StatusBadge';
 
 // "Atölye Panosu" kartı: ne Instagram'ın büyük fotoğraf ağırlıklı akışı,
 // ne de düz metinden ibaret bir forum satırı. Marka rengiyle boyanmış
-// sol şerit ve durum rozeti taramayı hızlandırırken, başlık her zaman
-// gerçek bir <h3> ve kendi adresine (slug) sahip — bu da Google'ın
-// "Traxxas Maxx motoru bozuldu" gibi aramalarda bu kartı doğrudan
-// bulabilmesinin temeli.
+// sol şerit (ışıltılı) ve durum rozeti taramayı hızlandırırken, başlık
+// her zaman gerçek bir <h3> ve kendi adresine (slug) sahip — bu da
+// Google'ın "Traxxas Maxx motoru bozuldu" gibi aramalarda bu kartı
+// doğrudan bulabilmesinin temeli.
 export default function ProblemCard({ problem }: { problem: Problem }) {
+  const color = brandColor(problem.brand);
+
   return (
     <Link
       href={`/sorun/${problem.slug}`}
-      className="group flex gap-3 border-b border-border/70 px-4 py-4 transition hover:bg-cardAlt/40"
+      className="group relative mx-3 mb-2.5 flex gap-3 overflow-hidden rounded-2xl border border-border/70 bg-card/60 px-3.5 py-3.5 transition hover:-translate-y-0.5 hover:border-border hover:bg-cardAlt/70 hover:shadow-lg hover:shadow-black/30"
     >
       <span
-        className="mt-1 w-[3px] shrink-0 self-stretch rounded-full"
-        style={{ backgroundColor: brandColor(problem.brand) }}
+        className="absolute left-0 top-0 h-full w-[3px] opacity-90 transition-all group-hover:w-[4px]"
+        style={{ background: `linear-gradient(180deg, ${color}, transparent)` }}
         aria-hidden
       />
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 pl-1.5">
         <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
           {problem.brand && (
-            <span className="rounded-md bg-cardAlt px-2 py-0.5 text-[11px] font-semibold text-muted">
+            <span
+              className="rounded-md px-2 py-0.5 text-[11px] font-semibold"
+              style={{ backgroundColor: `${color}22`, color }}
+            >
               {problem.brand}
               {problem.model ? ` ${problem.model}` : ''}
             </span>
@@ -48,20 +53,20 @@ export default function ProblemCard({ problem }: { problem: Problem }) {
           </span>
           <span>·</span>
           <span>{timeAgo(problem.created_at)}</span>
-          <span className="ml-auto flex items-center gap-1 font-semibold text-zinc-300">
+          <span className="ml-auto flex items-center gap-1 rounded-full bg-cardAlt px-2 py-0.5 font-semibold text-zinc-300">
             💬 {problem.answer_count}
           </span>
         </div>
       </div>
 
       {problem.image_url && (
-        <div className="relative h-[68px] w-[68px] shrink-0 overflow-hidden rounded-xl border border-border">
+        <div className="relative h-[76px] w-[76px] shrink-0 overflow-hidden rounded-xl border border-border">
           <Image
             src={problem.image_url}
             alt={problem.title}
             fill
-            sizes="68px"
-            className="object-cover"
+            sizes="76px"
+            className="object-cover transition group-hover:scale-105"
           />
         </div>
       )}

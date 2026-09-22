@@ -4,8 +4,26 @@ import { Problem } from '@/lib/types';
 import ProblemCard from '@/components/ProblemCard';
 import SearchBox from '@/components/SearchBox';
 import CategoryChips from '@/components/CategoryChips';
+import HomeHero from '@/components/HomeHero';
 
 export const revalidate = 60;
+
+async function getStats(supabase: ReturnType<typeof createClient>) {
+  const [{ count: problemCount }, { count: solvedCount }, { count: listingCount }, { count: memberCount }] =
+    await Promise.all([
+      supabase.from('problems').select('id', { count: 'exact', head: true }),
+      supabase.from('problems').select('id', { count: 'exact', head: true }).eq('status', 'solved'),
+      supabase.from('listings').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+      supabase.from('profiles').select('id', { count: 'exact', head: true })
+    ]);
+
+  return {
+    problemCount: problemCount ?? 0,
+    solvedCount: solvedCount ?? 0,
+    listingCount: listingCount ?? 0,
+    memberCount: memberCount ?? 0
+  };
+}
 
 export default async function HomePage({
   searchParams
@@ -13,6 +31,7 @@ export default async function HomePage({
   searchParams: { q?: string; kategori?: string };
 }) {
   const supabase = createClient();
+  const stats = await getStats(supabase);
 
   let query = supabase
     .from('problems')
@@ -41,11 +60,13 @@ export default async function HomePage({
 
   return (
     <div>
+      <HomeHero stats={stats} />
+
       <SearchBox />
       <CategoryChips />
 
       <div className="flex items-center justify-between px-4 pb-2 pt-1">
-        <h1 className="text-[17px] font-bold">Sorunlar &amp; Yanıtlar</h1>
+        <h2 className="text-[15px] font-bold text-zinc-300">Son Sorular</h2>
         <Link href="/sorun/yeni" className="text-[13px] font-semibold text-accent2">
           + Yeni Sorun
         </Link>

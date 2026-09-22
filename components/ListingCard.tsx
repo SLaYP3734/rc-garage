@@ -10,21 +10,26 @@ function formatPrice(price: number | null) {
 }
 
 export default function ListingCard({ listing }: { listing: Listing }) {
+  const color = brandColor(listing.brand);
+
   return (
     <Link
       href={`/ilan/${listing.slug}`}
-      className="group flex gap-3 border-b border-border/70 px-4 py-4 transition hover:bg-cardAlt/40"
+      className="group relative mx-3 mb-2.5 flex gap-3 overflow-hidden rounded-2xl border border-border/70 bg-card/60 px-3.5 py-3.5 transition hover:-translate-y-0.5 hover:border-border hover:bg-cardAlt/70 hover:shadow-lg hover:shadow-black/30"
     >
       <span
-        className="mt-1 w-[3px] shrink-0 self-stretch rounded-full"
-        style={{ backgroundColor: brandColor(listing.brand) }}
+        className="absolute left-0 top-0 h-full w-[3px] opacity-90 transition-all group-hover:w-[4px]"
+        style={{ background: `linear-gradient(180deg, ${color}, transparent)` }}
         aria-hidden
       />
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 pl-1.5">
         <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
           {listing.brand && (
-            <span className="rounded-md bg-cardAlt px-2 py-0.5 text-[11px] font-semibold text-muted">
+            <span
+              className="rounded-md px-2 py-0.5 text-[11px] font-semibold"
+              style={{ backgroundColor: `${color}22`, color }}
+            >
               {listing.brand}
               {listing.model ? ` ${listing.model}` : ''}
             </span>
@@ -38,7 +43,9 @@ export default function ListingCard({ listing }: { listing: Listing }) {
                 : 'border-sky-500/30 bg-sky-500/15 text-sky-400'
             }`}
           >
-            {listing.status === 'sold' ? 'Satıldı' : CONDITION_LABEL[listing.condition]}
+            {listing.status === 'sold'
+              ? 'Satıldı'
+              : CONDITION_LABEL[listing.condition as 'yeni' | 'kullanilmis']}
           </span>
         </div>
 
@@ -56,20 +63,20 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           </span>
           <span>·</span>
           <span>{timeAgo(listing.created_at)}</span>
-          <span className="ml-auto text-[13px] font-extrabold text-accent">
+          <span className="ml-auto rounded-full bg-cardAlt px-2 py-0.5 text-[12px] font-extrabold text-accent">
             {formatPrice(listing.price)}
           </span>
         </div>
       </div>
 
       {listing.image_url && (
-        <div className="relative h-[68px] w-[68px] shrink-0 overflow-hidden rounded-xl border border-border">
+        <div className="relative h-[76px] w-[76px] shrink-0 overflow-hidden rounded-xl border border-border">
           <Image
             src={listing.image_url}
             alt={listing.title}
             fill
-            sizes="68px"
-            className="object-cover"
+            sizes="76px"
+            className="object-cover transition group-hover:scale-105"
           />
         </div>
       )}
