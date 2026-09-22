@@ -31,11 +31,10 @@ export default function HomeHero({ stats }: { stats: Stats }) {
         </span>
 
         <h1 className="mt-3 text-[21px] font-extrabold leading-tight">
-          Sorunu sor, <span className="text-accent">dakikalar içinde</span> çöz.
+          EN BÜYÜK RC, <span className="text-accent">PLATFORMU</span> çöz.
         </h1>
         <p className="mt-1.5 max-w-[320px] text-[13px] leading-relaxed text-muted">
-          Deneyimli RC&apos;cilerin cevapladığı sorular, Google&apos;da aranabilir — WhatsApp
-          grubunda kaybolmuyor.
+          Bize katılmak için kayıt olur musun?
         </p>
 
         <div className="mt-4 grid grid-cols-4 gap-2">
