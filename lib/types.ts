@@ -26,6 +26,15 @@ export type Answer = {
   author_username?: string | null;
 };
 
+export type Message = {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  body: string;
+  created_at: string;
+  read_at: string | null;
+};
+
 export const CATEGORIES = [
   { value: 'motor', label: 'Motor' },
   { value: 'esc', label: 'ESC' },

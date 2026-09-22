@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { brandColor } from '@/lib/brand';
@@ -101,6 +102,14 @@ export default async function ProblemPage({ params }: { params: { slug: string }
         </span>
         <span>·</span>
         <span>{timeAgo(problem.created_at)}</span>
+        {!isOwner && user && (
+          <>
+            <span>·</span>
+            <Link href={`/mesajlar/${problem.user_id}`} className="text-accent">
+              Mesaj Gönder
+            </Link>
+          </>
+        )}
       </div>
 
       {problem.image_url && (
@@ -139,6 +148,11 @@ export default async function ProblemPage({ params }: { params: { slug: string }
                   <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
                     ✓ Kabul edilen yanıt
                   </span>
+                )}
+                {user && answer.user_id !== user.id && (
+                  <Link href={`/mesajlar/${answer.user_id}`} className="text-accent">
+                    Mesaj
+                  </Link>
                 )}
               </div>
 
