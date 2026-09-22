@@ -3,13 +3,23 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 // Supabase oturum çerezini her istekte tazeler. Bu olmadan giriş yapmış
 // kullanıcı bir süre sonra sunucu tarafında "çıkış yapmış" gibi görünebilir.
+//
+// Tamamı try/catch içinde: ortam değişkenleri eksik/yanlışsa ya da
+// Supabase'e ulaşılamıyorsa, bu middleware sitenin tamamını kilitlemek
+// yerine isteği olduğu gibi geçirir (kullanıcı sadece giriş yapmamış
+// gibi görünür, sayfa hatası almaz).
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      return response;
+    }
+
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
         get(name: string) {
           return request.cookies.get(name)?.value;
@@ -25,10 +35,12 @@ export async function middleware(request: NextRequest) {
           response.cookies.set({ name, value: '', ...options });
         }
       }
-    }
-  );
+    });
 
-  await supabase.auth.getUser();
+    await supabase.auth.getUser();
+  } catch (err) {
+    console.error('middleware auth refresh failed:', err);
+  }
 
   return response;
 }
