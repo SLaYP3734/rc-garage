@@ -17,6 +17,9 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'tr_TR',
     siteName: 'RC Garage'
+  },
+  verification: {
+    google: 'JJ6XdAjqZQ4HY3WrB5BlC0x0eDqWMVq_mCTA_90H40I'
   }
 };
 
