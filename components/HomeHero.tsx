@@ -31,10 +31,11 @@ export default function HomeHero({ stats }: { stats: Stats }) {
         </span>
 
         <h1 className="mt-3 text-[21px] font-extrabold leading-tight">
-          RC <span className="text-accent">GARAGE</span>
+          Sorunu sor, <span className="text-accent">dakikalar içinde</span> çöz.
         </h1>
         <p className="mt-1.5 max-w-[320px] text-[13px] leading-relaxed text-muted">
-          Kayıt Olup Bizi Takip Edin. Sorularınız İçin Bizimle İletşime Geçebilirsiniz.
+          Deneyimli RC&apos;cilerin cevapladığı sorular, Google&apos;da aranabilir — WhatsApp
+          grubunda kaybolmuyor.
         </p>
 
         <div className="mt-4 grid grid-cols-4 gap-2">
@@ -49,13 +50,19 @@ export default function HomeHero({ stats }: { stats: Stats }) {
             href="/sorun/yeni"
             className="flex-1 rounded-xl bg-accent px-3 py-2.5 text-center text-[13px] font-extrabold text-black"
           >
-            + Arıza Çözümü
+            + Sorun Sor
           </Link>
           <Link
             href="/al-sat"
             className="flex-1 rounded-xl border border-border bg-cardAlt px-3 py-2.5 text-center text-[13px] font-bold text-zinc-200"
           >
             🛒 Al / Sat
+          </Link>
+          <Link
+            href="/vitrin"
+            className="flex-1 rounded-xl border border-border bg-cardAlt px-3 py-2.5 text-center text-[13px] font-bold text-zinc-200"
+          >
+            🏎️ Vitrin
           </Link>
         </div>
       </div>

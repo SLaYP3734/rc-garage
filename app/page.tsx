@@ -5,6 +5,9 @@ import ProblemCard from '@/components/ProblemCard';
 import SearchBox from '@/components/SearchBox';
 import CategoryChips from '@/components/CategoryChips';
 import HomeHero from '@/components/HomeHero';
+import TopHelpers from '@/components/TopHelpers';
+import FeaturedCar from '@/components/FeaturedCar';
+import { attachUsernames } from '@/lib/attachUsernames';
 
 export const revalidate = 60;
 
@@ -31,7 +34,21 @@ export default async function HomePage({
   searchParams: { q?: string; kategori?: string };
 }) {
   const supabase = createClient();
-  const stats = await getStats(supabase);
+
+  const [stats, { data: topHelpers }, { data: featuredCars }] = await Promise.all([
+    getStats(supabase),
+    supabase.from('top_helpers').select('*').limit(8),
+    supabase
+      .from('garage_cars')
+      .select('id, user_id, brand, model, image_url, like_count')
+      .not('image_url', 'is', null)
+      .order('like_count', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(1)
+  ]);
+
+  const featuredCarWithUsername = await attachUsernames(supabase, featuredCars ?? []);
+  const featuredCar = featuredCarWithUsername[0] ?? null;
 
   let query = supabase
     .from('problems')
@@ -61,6 +78,9 @@ export default async function HomePage({
   return (
     <div>
       <HomeHero stats={stats} />
+
+      {featuredCar && <FeaturedCar car={featuredCar} />}
+      <TopHelpers helpers={topHelpers ?? []} />
 
       <SearchBox />
       <CategoryChips />

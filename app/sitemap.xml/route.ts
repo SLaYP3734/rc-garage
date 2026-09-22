@@ -13,9 +13,23 @@ export const revalidate = 3600;
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rc-garage-three.vercel.app';
 
-type Row = { slug: string; created_at: string };
+type Row = { slug: string; created_at: string; brand?: string | null };
 
-async function fetchRows(table: string): Promise<Row[]> {
+function slugifyBrand(brand: string): string {
+  const map: Record<string, string> = {
+    ç: 'c', Ç: 'c', ğ: 'g', Ğ: 'g', ı: 'i', İ: 'i', ö: 'o', Ö: 'o', ş: 's', Ş: 's', ü: 'u', Ü: 'u'
+  };
+  return brand
+    .split('')
+    .map((ch) => map[ch] ?? ch)
+    .join('')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
+
+async function fetchRows(table: string, select = 'slug,created_at'): Promise<Row[]> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -23,7 +37,7 @@ async function fetchRows(table: string): Promise<Row[]> {
 
   try {
     const res = await fetch(
-      `${supabaseUrl}/rest/v1/${table}?select=slug,created_at&order=created_at.desc&limit=5000`,
+      `${supabaseUrl}/rest/v1/${table}?select=${select}&order=created_at.desc&limit=5000`,
       {
         headers: {
           apikey: supabaseKey,
@@ -47,22 +61,37 @@ function urlTag(loc: string, lastmod?: string, changefreq = 'weekly', priority =
 }
 
 export async function GET() {
-  const [problems, listings] = await Promise.all([fetchRows('problems'), fetchRows('listings')]);
+  const [problems, listings, garageCars] = await Promise.all([
+    fetchRows('problems', 'slug,created_at,brand'),
+    fetchRows('listings', 'slug,created_at,brand'),
+    fetchRows('garage_cars', 'brand,created_at')
+  ]);
 
   const staticEntries = [
     urlTag(siteUrl, undefined, 'hourly', '1'),
     urlTag(`${siteUrl}/sorun/yeni`, undefined, 'monthly', '0.5'),
     urlTag(`${siteUrl}/al-sat`, undefined, 'hourly', '0.9'),
-    urlTag(`${siteUrl}/ilan/yeni`, undefined, 'monthly', '0.5')
+    urlTag(`${siteUrl}/ilan/yeni`, undefined, 'monthly', '0.5'),
+    urlTag(`${siteUrl}/vitrin`, undefined, 'hourly', '0.7')
   ];
 
   const problemEntries = problems.map((p) => urlTag(`${siteUrl}/sorun/${p.slug}`, p.created_at));
   const listingEntries = listings.map((l) => urlTag(`${siteUrl}/ilan/${l.slug}`, l.created_at));
 
+  const brandSlugs = new Set<string>();
+  [...problems, ...listings, ...garageCars].forEach((row) => {
+    if (row.brand) brandSlugs.add(slugifyBrand(row.brand));
+  });
+
+  const brandEntries = Array.from(brandSlugs)
+    .filter(Boolean)
+    .map((slug) => urlTag(`${siteUrl}/marka/${slug}`, undefined, 'weekly', '0.6'));
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[
     ...staticEntries,
     ...problemEntries,
-    ...listingEntries
+    ...listingEntries,
+    ...brandEntries
   ].join('')}</urlset>`;
 
   return new NextResponse(xml, {

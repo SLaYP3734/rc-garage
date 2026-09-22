@@ -21,6 +21,7 @@ export default function GarageCarModal({
   const [esc, setEsc] = useState('');
   const [battery, setBattery] = useState('');
   const [notes, setNotes] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -40,7 +41,8 @@ export default function GarageCarModal({
       motor: motor.trim(),
       esc: esc.trim(),
       battery: battery.trim(),
-      notes: notes.trim()
+      notes: notes.trim(),
+      image_url: imageUrl.trim() || null
     });
 
     setSaving(false);
@@ -79,6 +81,7 @@ export default function GarageCarModal({
           <Field placeholder="Motor" value={motor} onChange={setMotor} />
           <Field placeholder="ESC" value={esc} onChange={setEsc} />
           <Field placeholder="Batarya" value={battery} onChange={setBattery} />
+          <Field placeholder="Fotoğraf linki (opsiyonel)" value={imageUrl} onChange={setImageUrl} />
           <textarea
             placeholder="Araç hakkında notların..."
             value={notes}

@@ -32,3 +32,16 @@ export function buildListingSlug(brand: string, model: string, title: string): s
   const suffix = Math.random().toString(36).slice(2, 8);
   return `${base}-${suffix}`;
 }
+
+// Marka sayfalarının (/marka/traxxas gibi) adresini üretir.
+export function brandSlug(brand: string): string {
+  return slugify(brand);
+}
+
+// URL'deki marka slug'ından ("team-associated"), veritabanında ilike ile
+// aranacak bir metne döner ("team associated"). Marka isimleri serbest
+// metin olduğu için kesin eşleşme yerine büyük/küçük harf duyarsız
+// "içerir" araması kullanıyoruz.
+export function brandSlugToSearchText(slug: string): string {
+  return slug.replace(/-/g, ' ');
+}

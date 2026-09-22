@@ -85,3 +85,33 @@ export const CONDITION_LABEL: Record<ListingCondition, string> = {
   yeni: 'Sıfır',
   kullanilmis: 'İkinci El'
 };
+
+export type GarageCar = {
+  id: string;
+  user_id: string;
+  brand: string;
+  model: string;
+  scale: string | null;
+  motor: string | null;
+  esc: string | null;
+  battery: string | null;
+  notes: string | null;
+  image_url: string | null;
+  like_count: number;
+  created_at: string;
+  author_username?: string | null;
+};
+
+export type TopHelper = {
+  user_id: string;
+  username: string | null;
+  solved_count: number;
+};
+
+// Çözülen soru sayısına göre bir kullanıcıya verilecek rozet.
+export function badgeForSolvedCount(count: number): { label: string; icon: string } | null {
+  if (count >= 15) return { label: 'Usta', icon: '🏆' };
+  if (count >= 5) return { label: 'Uzman', icon: '🔧' };
+  if (count >= 1) return { label: 'Yardımsever', icon: '🌱' };
+  return null;
+}
