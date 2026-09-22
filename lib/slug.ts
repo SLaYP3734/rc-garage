@@ -26,3 +26,9 @@ export function buildProblemSlug(brand: string, model: string, title: string): s
   const suffix = Math.random().toString(36).slice(2, 8);
   return `${base}-${suffix}`;
 }
+
+export function buildListingSlug(brand: string, model: string, title: string): string {
+  const base = slugify(`${brand} ${model} ${title}`) || slugify(title) || 'ilan';
+  const suffix = Math.random().toString(36).slice(2, 8);
+  return `${base}-${suffix}`;
+}

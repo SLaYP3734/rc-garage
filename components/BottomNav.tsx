@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { playNotificationSound } from '@/lib/notificationSound';
 
 const items = [
   { href: '/', label: 'Akış', icon: '⌂' },
   { href: '/sorun/yeni', label: 'Sorun Sor', icon: '＋', primary: true },
   { href: '/mesajlar', label: 'Mesajlar', icon: '💬' },
+  { href: '/al-sat', label: 'Al / Sat', icon: '🛒' },
   { href: '/profil', label: 'Profil', icon: '👤' }
 ];
 
@@ -16,6 +18,7 @@ export default function BottomNav() {
   const pathname = usePathname();
   const supabase = createClient();
   const [unread, setUnread] = useState(0);
+  const prevUnreadRef = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -36,7 +39,16 @@ export default function BottomNav() {
         .eq('receiver_id', user.id)
         .is('read_at', null);
 
-      if (!cancelled) setUnread(count || 0);
+      const newCount = count || 0;
+
+      if (!cancelled) {
+        // Sayı önceki kontrole göre arttıysa (yeni bir mesaj geldiyse) ses çal.
+        if (prevUnreadRef.current !== null && newCount > prevUnreadRef.current) {
+          playNotificationSound();
+        }
+        prevUnreadRef.current = newCount;
+        setUnread(newCount);
+      }
     }
 
     checkUnread();
@@ -84,15 +96,6 @@ export default function BottomNav() {
           </Link>
         );
       })}
-
-      <button
-        disabled
-        title="Yakında"
-        className="col-start-5 flex flex-col items-center justify-center gap-1 text-xl text-mutedDim opacity-50"
-      >
-        🛒
-        <small className="text-[10px]">Al / Sat</small>
-      </button>
     </nav>
   );
 }

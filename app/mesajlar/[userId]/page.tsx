@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { timeAgo } from '@/lib/time';
+import { playNotificationSound } from '@/lib/notificationSound';
 import AuthModal from '@/components/AuthModal';
 
 type Msg = {
@@ -29,6 +30,7 @@ export default function ConversationPage() {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,11 +86,20 @@ export default function ConversationPage() {
       }
 
       if (!cancelled) {
-        setMessages(data || []);
+        const rows = data || [];
 
-        const unreadIds = (data || [])
-          .filter((m) => m.receiver_id === meId && !m.read_at)
-          .map((m) => m.id);
+        // Karşı taraftan gelen yeni bir mesajla mesaj sayısı arttıysa ses çal.
+        if (prevMessageCountRef.current !== null && rows.length > prevMessageCountRef.current) {
+          const newOnes = rows.slice(prevMessageCountRef.current);
+          if (newOnes.some((m) => m.sender_id !== meId)) {
+            playNotificationSound();
+          }
+        }
+        prevMessageCountRef.current = rows.length;
+
+        setMessages(rows);
+
+        const unreadIds = rows.filter((m) => m.receiver_id === meId && !m.read_at).map((m) => m.id);
 
         if (unreadIds.length) {
           await supabase.from('messages').update({ read_at: new Date().toISOString() }).in('id', unreadIds);

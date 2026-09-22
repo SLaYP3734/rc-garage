@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { timeAgo } from '@/lib/time';
+import { playNotificationSound } from '@/lib/notificationSound';
 import AuthModal from '@/components/AuthModal';
 
 type ConversationRow = {
@@ -20,6 +21,7 @@ export default function MessagesInboxPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [conversations, setConversations] = useState<ConversationRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const prevUnreadTotalRef = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,7 +79,15 @@ export default function MessagesInboxPage() {
       });
 
       if (!cancelled) {
-        setConversations(Array.from(map.values()));
+        const rows = Array.from(map.values());
+        const totalUnread = rows.reduce((sum, r) => sum + r.unread, 0);
+
+        if (prevUnreadTotalRef.current !== null && totalUnread > prevUnreadTotalRef.current) {
+          playNotificationSound();
+        }
+        prevUnreadTotalRef.current = totalUnread;
+
+        setConversations(rows);
         setLoading(false);
       }
     }
