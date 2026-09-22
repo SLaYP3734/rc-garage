@@ -1,4 +1,4 @@
-et sharedCtx: AudioContext | null = null;
+let sharedCtx: AudioContext | null = null;
 
 function getContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
