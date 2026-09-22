@@ -31,10 +31,10 @@ export default function HomeHero({ stats }: { stats: Stats }) {
         </span>
 
         <h1 className="mt-3 text-[21px] font-extrabold leading-tight">
-          EN BÜYÜK RC, <span className="text-accent">PLATFORMU</span> çöz.
+          RC <span className="text-accent">GARAGE</span>
         </h1>
         <p className="mt-1.5 max-w-[320px] text-[13px] leading-relaxed text-muted">
-          Bize katılmak için kayıt olur musun?
+          Kayıt Olup Bizi Takip Edin. Sorularınız İçin Bizimle İletşime Geçebilirsiniz.
         </p>
 
         <div className="mt-4 grid grid-cols-4 gap-2">
@@ -49,7 +49,7 @@ export default function HomeHero({ stats }: { stats: Stats }) {
             href="/sorun/yeni"
             className="flex-1 rounded-xl bg-accent px-3 py-2.5 text-center text-[13px] font-extrabold text-black"
           >
-            + Sorun Sor
+            + Arıza Çözümü
           </Link>
           <Link
             href="/al-sat"
