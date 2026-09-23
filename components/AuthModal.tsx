@@ -118,13 +118,14 @@ export default function AuthModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/75 p-5 backdrop-blur-sm"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="relative max-h-[92vh] w-full max-w-[390px] overflow-y-auto rounded-[22px] border border-border bg-card p-8 pb-6 text-center shadow-2xl">
+    <div className="fixed inset-0 z-[1000] overflow-y-auto bg-black/75 p-5 backdrop-blur-sm">
+      <div
+        className="flex min-h-full items-center justify-center"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+      <div className="relative w-full max-w-[390px] rounded-[22px] border border-border bg-card p-8 pb-6 text-center shadow-2xl">
         <button
           onClick={onClose}
           className="absolute right-3.5 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-cardAlt text-xl text-muted hover:text-white"
@@ -214,6 +215,7 @@ export default function AuthModal({
         >
           {registerMode ? 'Zaten hesabın var mı? Giriş Yap' : 'Hesabın yok mu? Kayıt Ol'}
         </button>
+      </div>
       </div>
     </div>
   );

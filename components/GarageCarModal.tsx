@@ -61,13 +61,14 @@ export default function GarageCarModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/78 p-[18px] backdrop-blur-sm"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="relative max-h-[90vh] w-full max-w-[420px] overflow-y-auto rounded-[20px] border border-border bg-card p-7 pb-5">
+    <div className="fixed inset-0 z-[2000] overflow-y-auto bg-black/78 p-[18px] backdrop-blur-sm">
+      <div
+        className="flex min-h-full items-center justify-center"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+      <div className="relative w-full max-w-[420px] rounded-[20px] border border-border bg-card p-7 pb-5">
         <button
           onClick={onClose}
           className="absolute right-3.5 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-cardAlt text-xl text-muted hover:text-white"
@@ -117,6 +118,7 @@ export default function GarageCarModal({
         {message && (
           <p className="mt-2.5 text-center text-[13px] text-accent2">{message}</p>
         )}
+      </div>
       </div>
     </div>
   );
