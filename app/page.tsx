@@ -11,6 +11,7 @@ import TopSellers from '@/components/TopSellers';
 import FeaturedCar from '@/components/FeaturedCar';
 import NewItemsBanner from '@/components/NewItemsBanner';
 import ContactButton from '@/components/ContactButton';
+import HomeStats from '@/components/HomeStats';
 import { attachUsernames } from '@/lib/attachUsernames';
 
 export const revalidate = 60;
@@ -87,9 +88,8 @@ export default async function HomePage({
 
   return (
     <div>
-      <HomeHero stats={stats} />
+      <HomeHero />
 
-      {featuredCar && <FeaturedCar car={featuredCar} />}
       <TopHelpers helpers={topHelpers ?? []} />
       <TopSellers sellers={topSellers.map((s: any) => ({ ...s, username: s.author_username }))} />
 
@@ -134,6 +134,8 @@ export default async function HomePage({
         ))}
       </div>
 
+      <HomeStats stats={stats} />
+      {featuredCar && <FeaturedCar car={featuredCar} />}
       <ContactButton />
     </div>
   );
