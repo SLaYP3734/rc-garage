@@ -6,6 +6,8 @@ import { createClient } from '@/lib/supabase/client';
 import Avatar from '@/components/Avatar';
 import FollowButton from '@/components/FollowButton';
 
+const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
+
 type MemberRow = {
   id: string;
   username: string | null;
@@ -35,7 +37,7 @@ export default function MembersPage() {
     }
 
     const { data: profiles } = await query;
-    const rows = (profiles ?? []) as any[];
+    const rows = ((profiles ?? []) as any[]).filter((r) => r.id !== ADMIN_USER_ID);
 
     const ids = rows.map((r) => r.id);
     let followerCountById = new Map<string, number>();
