@@ -97,7 +97,7 @@ export default async function HomePage({
       <CategoryChips />
 
       <div className="flex items-center justify-between px-4 pb-2 pt-1">
-        <h2 className="text-[15px] font-bold text-zinc-300">Son Sorular</h2>
+        <h2 className="text-[15px] font-bold text-zinc-300">Son Konular</h2>
         <Link href="/sorun/yeni" className="text-[13px] font-semibold text-accent2">
           + YENİ KONU AÇ
         </Link>
