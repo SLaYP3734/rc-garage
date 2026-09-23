@@ -3,6 +3,18 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import Turnstile from '@/components/Turnstile';
+
+const MIN_AGE = 13;
+
+function calculateAge(birthDate: string): number {
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
+}
 
 export default function AuthModal({
   open,
@@ -18,14 +30,25 @@ export default function AuthModal({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
   if (!open) return null;
 
+  const captchaRequired = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
   async function handleSubmit() {
     if (!email || !password) {
       setMessage('E-posta ve şifre alanlarını doldur.');
+      return;
+    }
+
+    if (captchaRequired && !captchaToken) {
+      setMessage('Lütfen robot olmadığını doğrula.');
       return;
     }
 
@@ -40,10 +63,31 @@ export default function AuthModal({
           return;
         }
 
+        if (!fullName.trim() || fullName.trim().split(/\s+/).length < 2) {
+          setMessage('Lütfen ad ve soyadını gir.');
+          setLoading(false);
+          return;
+        }
+
+        if (!birthDate) {
+          setMessage('Lütfen doğum tarihini gir.');
+          setLoading(false);
+          return;
+        }
+
+        if (calculateAge(birthDate) < MIN_AGE) {
+          setMessage(`Kayıt olmak için en az ${MIN_AGE} yaşında olman gerekiyor.`);
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { username: username.trim() } }
+          options: {
+            data: { username: username.trim(), full_name: fullName.trim(), birth_date: birthDate },
+            captchaToken: captchaRequired ? captchaToken : undefined
+          }
         });
 
         if (error) throw error;
@@ -51,7 +95,11 @@ export default function AuthModal({
         setMessage('Kayıt başarılı! Şimdi giriş yapabilirsin.');
         setRegisterMode(false);
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+          options: { captchaToken: captchaRequired ? captchaToken : undefined }
+        });
         if (error) throw error;
 
         setMessage('Giriş başarılı!');
@@ -62,6 +110,8 @@ export default function AuthModal({
       }
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Bir hata oluştu.');
+      setCaptchaToken('');
+      setCaptchaResetKey((k) => k + 1);
     } finally {
       setLoading(false);
     }
@@ -74,7 +124,7 @@ export default function AuthModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-[390px] rounded-[22px] border border-border bg-card p-8 pb-6 text-center shadow-2xl">
+      <div className="relative max-h-[92vh] w-full max-w-[390px] overflow-y-auto rounded-[22px] border border-border bg-card p-8 pb-6 text-center shadow-2xl">
         <button
           onClick={onClose}
           className="absolute right-3.5 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-cardAlt text-xl text-muted hover:text-white"
@@ -107,14 +157,42 @@ export default function AuthModal({
           onChange={(e) => setPassword(e.target.value)}
           className="mb-3 h-[50px] w-full rounded-xl border border-border bg-cardAlt px-4 text-[15px] outline-none focus:border-accent"
         />
+
         {registerMode && (
-          <input
-            type="text"
-            placeholder="Kullanıcı adı"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="mb-3 h-[50px] w-full rounded-xl border border-border bg-cardAlt px-4 text-[15px] outline-none focus:border-accent"
-          />
+          <>
+            <input
+              type="text"
+              placeholder="Kullanıcı adı"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="mb-3 h-[50px] w-full rounded-xl border border-border bg-cardAlt px-4 text-[15px] outline-none focus:border-accent"
+            />
+            <input
+              type="text"
+              placeholder="Ad Soyad"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="mb-3 h-[50px] w-full rounded-xl border border-border bg-cardAlt px-4 text-[15px] outline-none focus:border-accent"
+            />
+            <div className="mb-3 text-left">
+              <label className="mb-1 block px-1 text-[11px] font-medium text-mutedDim">
+                Doğum Tarihi
+              </label>
+              <input
+                type="date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                max={new Date().toISOString().split('T')[0]}
+                className="h-[50px] w-full rounded-xl border border-border bg-cardAlt px-4 text-[15px] text-zinc-200 outline-none focus:border-accent"
+              />
+            </div>
+          </>
+        )}
+
+        {captchaRequired && (
+          <div className="mb-3">
+            <Turnstile onToken={setCaptchaToken} resetKey={captchaResetKey} />
+          </div>
         )}
 
         <button

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import ImageUpload from '@/components/ImageUpload';
 
 export default function GarageCarModal({
   userId,
@@ -81,7 +82,7 @@ export default function GarageCarModal({
           <Field placeholder="Motor" value={motor} onChange={setMotor} />
           <Field placeholder="ESC" value={esc} onChange={setEsc} />
           <Field placeholder="Batarya" value={battery} onChange={setBattery} />
-          <Field placeholder="Fotoğraf linki (opsiyonel)" value={imageUrl} onChange={setImageUrl} />
+          <ImageUpload value={imageUrl} onChange={setImageUrl} />
           <textarea
             placeholder="Araç hakkında notların..."
             value={notes}

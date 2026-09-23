@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { brandColor } from '@/lib/brand';
 import { timeAgo } from '@/lib/time';
-import { CONDITION_LABEL, LISTING_CATEGORIES } from '@/lib/types';
+import { CONDITION_LABEL, LISTING_CATEGORIES, badgeForSolvedCount } from '@/lib/types';
 import MarkSoldButton from '@/components/MarkSoldButton';
 
 function formatPrice(price: number | null) {
@@ -66,6 +66,30 @@ export default async function ListingPage({ params }: { params: { slug: string }
 
   const categoryLabel = LISTING_CATEGORIES.find((c) => c.value === listing.category)?.label;
   const isOwner = user?.id === listing.user_id;
+  const sellerUsername = (listing as any).profiles?.username as string | null;
+
+  let sellerInfo: { createdAt: string; solvedCount: number; listingCount: number } | null = null;
+  if (sellerUsername) {
+    const [{ data: sellerProfile }, { count: solvedCount }, { count: listingCount }] = await Promise.all([
+      supabase.from('profiles').select('created_at').eq('id', listing.user_id).maybeSingle(),
+      supabase
+        .from('answers')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', listing.user_id)
+        .eq('is_accepted', true),
+      supabase.from('listings').select('id', { count: 'exact', head: true }).eq('user_id', listing.user_id)
+    ]);
+
+    if (sellerProfile) {
+      sellerInfo = {
+        createdAt: sellerProfile.created_at,
+        solvedCount: solvedCount ?? 0,
+        listingCount: listingCount ?? 0
+      };
+    }
+  }
+
+  const sellerBadge = sellerInfo ? badgeForSolvedCount(sellerInfo.solvedCount) : null;
 
   return (
     <article className="px-4 py-5">
@@ -101,9 +125,13 @@ export default async function ListingPage({ params }: { params: { slug: string }
       <h1 className="text-xl font-extrabold leading-snug">{listing.title}</h1>
 
       <div className="mt-2 flex items-center gap-2 text-[12px] text-mutedDim">
-        <span className="font-semibold text-zinc-400">
-          {(listing as any).profiles?.username || 'RC Garage üyesi'}
-        </span>
+        {sellerUsername ? (
+          <Link href={`/satici/${sellerUsername}`} className="font-semibold text-zinc-400 hover:text-accent2">
+            {sellerUsername}
+          </Link>
+        ) : (
+          <span className="font-semibold text-zinc-400">RC Garage üyesi</span>
+        )}
         <span>·</span>
         <span>{timeAgo(listing.created_at)}</span>
         {!isOwner && user && (
@@ -115,6 +143,31 @@ export default async function ListingPage({ params }: { params: { slug: string }
           </>
         )}
       </div>
+
+      {sellerUsername && sellerInfo && (
+        <Link
+          href={`/satici/${sellerUsername}`}
+          className="mt-3 flex items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-2.5"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-extrabold text-black">
+            {sellerUsername.charAt(0).toUpperCase()}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[12.5px] font-semibold text-zinc-200">
+              {sellerUsername}
+              {sellerBadge && (
+                <span className="ml-1.5 text-[11px] font-medium text-accent2">
+                  {sellerBadge.icon} {sellerBadge.label}
+                </span>
+              )}
+            </span>
+            <span className="block text-[11px] text-mutedDim">
+              Üye olalı {timeAgo(sellerInfo.createdAt)} · {sellerInfo.listingCount} ilan
+            </span>
+          </span>
+          <span className="shrink-0 text-[11px] font-semibold text-accent2">Profili gör →</span>
+        </Link>
+      )}
 
       <p className="mt-3 text-2xl font-extrabold text-accent">{formatPrice(listing.price)}</p>
 

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { buildListingSlug } from '@/lib/slug';
 import { LISTING_CATEGORIES, ListingCondition } from '@/lib/types';
 import AuthModal from '@/components/AuthModal';
+import ImageUpload from '@/components/ImageUpload';
 
 export default function NewListingPage() {
   const supabase = createClient();
@@ -147,11 +148,7 @@ export default function NewListingPage() {
           className="w-full resize-y rounded-xl border border-border bg-cardAlt px-3.5 py-3 text-sm outline-none focus:border-accent"
         />
 
-        <Input
-          placeholder="Fotoğraf linki (opsiyonel)"
-          value={imageUrl}
-          onChange={setImageUrl}
-        />
+        <ImageUpload value={imageUrl} onChange={setImageUrl} />
 
         <button
           type="submit"
