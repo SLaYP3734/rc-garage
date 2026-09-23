@@ -38,8 +38,8 @@ export default function HomeHero({ stats }: { stats: Stats }) {
         )}
 
         <div className="mt-4 grid grid-cols-4 gap-2">
-          <StatTile value={stats.problemCount} label="Soru" />
-          <StatTile value={stats.solvedCount} label="Çözüldü" accent />
+          <StatTile value={stats.problemCount} label="Arıza Konusu" />
+          <StatTile value={stats.solvedCount} label="Çözülen Arıza" accent />
           <StatTile value={stats.listingCount} label="İlan" />
           <StatTile value={stats.memberCount} label="Üye" />
         </div>
