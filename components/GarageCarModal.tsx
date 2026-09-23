@@ -79,23 +79,17 @@ export default function GarageCarModal({
         <p className="mb-5 text-sm text-muted">RC aracının bilgilerini garajına kaydet.</p>
 
         <div className="space-y-2.5">
-          <div className="grid grid-cols-3 gap-2">
+          <select
+            value={vehicleType}
+            onChange={(e) => setVehicleType(e.target.value as VehicleType)}
+            className="h-12 w-full rounded-[11px] border border-border bg-cardAlt px-3.5 text-sm outline-none focus:border-accent"
+          >
             {VEHICLE_TYPES.map((v) => (
-              <button
-                key={v.value}
-                type="button"
-                onClick={() => setVehicleType(v.value)}
-                className={`flex h-[50px] flex-col items-center justify-center gap-0.5 rounded-xl border text-[10.5px] font-semibold ${
-                  vehicleType === v.value
-                    ? 'border-accent bg-accent/15 text-accent2'
-                    : 'border-border bg-cardAlt text-muted'
-                }`}
-              >
-                <span className="text-[15px] leading-none">{v.icon}</span>
+              <option key={v.value} value={v.value}>
                 {v.label}
-              </button>
+              </option>
             ))}
-          </div>
+          </select>
           <Field placeholder="Marka (Traxxas, Arrma...)" value={brand} onChange={setBrand} />
           <Field placeholder="Model (Maxx, Kraton...)" value={model} onChange={setModel} />
           <Field placeholder="Ölçek (1/10, 1/8...)" value={scale} onChange={setScale} />

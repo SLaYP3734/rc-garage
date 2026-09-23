@@ -35,7 +35,7 @@ export default function VehicleTypeChips({ basePath }: { basePath: string }) {
             active === v.value ? 'border-accent bg-accent/15 text-accent2' : 'border-border text-muted'
           }`}
         >
-          {v.icon} {v.label}
+          {v.label}
         </button>
       ))}
     </div>

@@ -7,8 +7,6 @@ type Stats = {
   memberCount: number;
 };
 
-const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
-
 // Ana sayfanın en üstündeki karşılama şeridi. Sade bir liste yerine
 // siteye "canlı" ve topluluk hissi veren bir giriş — kaç sorunun
 // çözüldüğünü, kaç ilan olduğunu görmek, yeni bir ziyaretçiye burada
@@ -28,18 +26,9 @@ export default function HomeHero({ stats }: { stats: Stats }) {
       />
 
       <div className="relative">
-        {ADMIN_USER_ID && (
-          <Link
-            href={`/mesajlar/${ADMIN_USER_ID}`}
-            className="mt-3 block w-fit rounded-full border border-border bg-cardAlt px-3 py-1.5 text-[11.5px] font-semibold text-zinc-200 hover:border-accent hover:text-accent"
-          >
-            ✉️ Her Konuda Bizimle İletişime Geçin
-          </Link>
-        )}
-
-        <div className="mt-4 grid grid-cols-4 gap-2">
-          <StatTile value={stats.problemCount} label="Arıza Konusu" />
-          <StatTile value={stats.solvedCount} label="Çözülen Arıza" accent />
+        <div className="grid grid-cols-4 gap-2">
+          <StatTile value={stats.problemCount} label="Soru" />
+          <StatTile value={stats.solvedCount} label="Çözüldü" accent />
           <StatTile value={stats.listingCount} label="İlan" />
           <StatTile value={stats.memberCount} label="Üye" />
         </div>

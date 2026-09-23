@@ -99,23 +99,17 @@ export default function NewListingPage() {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="grid grid-cols-3 gap-2">
+        <select
+          value={vehicleType}
+          onChange={(e) => setVehicleType(e.target.value as VehicleType)}
+          className="h-[48px] w-full rounded-xl border border-border bg-cardAlt px-3.5 text-sm outline-none focus:border-accent"
+        >
           {VEHICLE_TYPES.map((v) => (
-            <button
-              key={v.value}
-              type="button"
-              onClick={() => setVehicleType(v.value)}
-              className={`flex h-[54px] flex-col items-center justify-center gap-0.5 rounded-xl border text-[11px] font-semibold ${
-                vehicleType === v.value
-                  ? 'border-accent bg-accent/15 text-accent2'
-                  : 'border-border bg-cardAlt text-muted'
-              }`}
-            >
-              <span className="text-base leading-none">{v.icon}</span>
+            <option key={v.value} value={v.value}>
               {v.label}
-            </button>
+            </option>
           ))}
-        </div>
+        </select>
 
         <div className="grid grid-cols-2 gap-3">
           <Input placeholder="Marka (Traxxas...)" value={brand} onChange={setBrand} />

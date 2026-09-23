@@ -121,6 +121,13 @@ export default function ProfilPage() {
         <Stat value={followingCount} label="Takip" />
       </div>
 
+      <Link
+        href="/uyeler"
+        className="mb-2.5 block w-full rounded-xl border border-border bg-cardAlt py-3 text-center text-sm font-bold text-zinc-300"
+      >
+        👥 Üyeleri Keşfet
+      </Link>
+
       <button
         onClick={handleLogout}
         className="w-full rounded-xl border border-border bg-cardAlt py-3 text-sm font-bold text-zinc-300"

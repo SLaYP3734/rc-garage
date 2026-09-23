@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { timeAgo } from '@/lib/time';
 import { playNotificationSound } from '@/lib/notificationSound';
@@ -175,13 +176,13 @@ export default function ConversationPage() {
         <button onClick={() => router.push('/mesajlar')} className="text-lg text-muted">
           ←
         </button>
-        <div>
-          <strong className="block text-[15px]">{otherUsername}</strong>
+        <Link href={`/satici/${otherUsername}`} className="min-w-0">
+          <strong className="block truncate text-[15px] hover:text-accent2">{otherUsername}</strong>
           <span className="flex items-center gap-1 text-[11px] text-mutedDim">
             {isOnline(otherLastSeen) && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
             {presenceLabel(otherLastSeen)}
           </span>
-        </div>
+        </Link>
       </div>
 
       <div className="flex-1 space-y-2 overflow-y-auto px-4 py-4">
