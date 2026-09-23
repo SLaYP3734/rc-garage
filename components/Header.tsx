@@ -11,7 +11,7 @@ export default async function Header() {
   return (
     <header className="sticky top-0 z-10 flex h-[62px] items-center justify-between border-b border-border bg-surface/95 px-[17px] backdrop-blur">
       <Link href="/">
-        <strong className="tracking-[1.5px]">
+        <strong className="text-xl font-extrabold tracking-[1.5px]">
           <i className="not-italic text-accent">RC</i> ATÖLYESİ
         </strong>
       </Link>
