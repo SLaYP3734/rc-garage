@@ -82,7 +82,7 @@ export default function GarageCarCard({
 
         {showOwner && (
           <p className="mb-1.5 text-[12px] font-semibold text-zinc-400">
-            {car.author_username || 'RC Garage üyesi'}
+            {car.author_username || 'RC Atölyesi üyesi'}
           </p>
         )}
 

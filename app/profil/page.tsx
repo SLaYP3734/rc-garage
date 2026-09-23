@@ -89,8 +89,8 @@ export default function ProfilPage() {
           {username ? username.charAt(0).toUpperCase() : '?'}
         </div>
         <div>
-          <h2 className="text-[23px] font-bold">{username || 'RC Garage üyesi'}</h2>
-          <p className="text-muted">RC Garage üyesi</p>
+          <h2 className="text-[23px] font-bold">{username || 'RC Atölyesi üyesi'}</h2>
+          <p className="text-muted">RC Atölyesi üyesi</p>
         </div>
       </div>
 

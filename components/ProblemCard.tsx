@@ -49,7 +49,7 @@ export default function ProblemCard({ problem }: { problem: Problem }) {
 
         <div className="mt-2.5 flex items-center gap-3 text-[11px] text-mutedDim">
           <span className="font-semibold text-zinc-400">
-            {problem.author_username || 'RC Garage üyesi'}
+            {problem.author_username || 'RC Atölyesi üyesi'}
           </span>
           <span>·</span>
           <span>{timeAgo(problem.created_at)}</span>

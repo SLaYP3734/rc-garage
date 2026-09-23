@@ -8,8 +8,8 @@ import GarageCarCard from '@/components/GarageCarCard';
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'Garaj Vitrini',
-  description: 'RC Garage topluluğunun paylaştığı araçlar — beğen, ilham al.'
+  title: 'Galeri',
+  description: 'RC Atölyesi topluluğunun paylaştığı araçlar — beğen, ilham al.'
 };
 
 export default async function VitrinPage() {
@@ -25,7 +25,7 @@ export default async function VitrinPage() {
 
   return (
     <div className="px-4 py-5">
-      <h1 className="mb-1 text-lg font-bold">🏎️ Garaj Vitrini</h1>
+      <h1 className="mb-1 text-lg font-bold">📸 Galeri</h1>
       <p className="mb-5 text-sm text-muted">
         Topluluğun paylaştığı araçlar. Beğendiklerine kalp at, kendi aracını{' '}
         <Link href="/profil" className="text-accent2">
@@ -36,14 +36,14 @@ export default async function VitrinPage() {
 
       {error && (
         <p className="py-6 text-center text-sm text-red-400">
-          Vitrin yüklenemedi. Supabase tablosu henüz güncellenmemiş olabilir.
+          Galeri yüklenemedi. Supabase tablosu henüz güncellenmemiş olabilir.
         </p>
       )}
 
       {!error && cars.length === 0 && (
         <div className="my-8 rounded-2xl border border-dashed border-border bg-card p-8 text-center">
           <div className="mb-2 text-4xl">🏎️</div>
-          <h3 className="font-bold">Vitrin henüz boş</h3>
+          <h3 className="font-bold">Galeri henüz boş</h3>
           <p className="mx-auto mt-1 max-w-[260px] text-sm text-muted">
             İlk aracı sen paylaş, topluluk görsün.
           </p>

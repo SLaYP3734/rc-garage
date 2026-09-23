@@ -7,6 +7,8 @@ type Stats = {
   memberCount: number;
 };
 
+const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
+
 // Ana sayfanın en üstündeki karşılama şeridi. Sade bir liste yerine
 // siteye "canlı" ve topluluk hissi veren bir giriş — kaç sorunun
 // çözüldüğünü, kaç ilan olduğunu görmek, yeni bir ziyaretçiye burada
@@ -30,13 +32,14 @@ export default function HomeHero({ stats }: { stats: Stats }) {
           🔧 Türkiye&apos;nin RC Atölyesi
         </span>
 
-        <h1 className="mt-3 text-[21px] font-extrabold leading-tight">
-          Sorunu sor, <span className="text-accent">dakikalar içinde</span> çöz.
-        </h1>
-        <p className="mt-1.5 max-w-[320px] text-[13px] leading-relaxed text-muted">
-          Deneyimli RC&apos;cilerin cevapladığı sorular, Google&apos;da aranabilir — WhatsApp
-          grubunda kaybolmuyor.
-        </p>
+        {ADMIN_USER_ID && (
+          <Link
+            href={`/mesajlar/${ADMIN_USER_ID}`}
+            className="mt-3 block w-fit rounded-full border border-border bg-cardAlt px-3 py-1.5 text-[11.5px] font-semibold text-zinc-200 hover:border-accent hover:text-accent"
+          >
+            ✉️ Her Konuda Bizimle İletişime Geçin
+          </Link>
+        )}
 
         <div className="mt-4 grid grid-cols-4 gap-2">
           <StatTile value={stats.problemCount} label="Soru" />
@@ -50,7 +53,7 @@ export default function HomeHero({ stats }: { stats: Stats }) {
             href="/sorun/yeni"
             className="flex-1 rounded-xl bg-accent px-3 py-2.5 text-center text-[13px] font-extrabold text-black"
           >
-            + Sorun Sor
+            🔧 Arızanı Yaz, Çözülsün
           </Link>
           <Link
             href="/al-sat"
@@ -62,7 +65,7 @@ export default function HomeHero({ stats }: { stats: Stats }) {
             href="/vitrin"
             className="flex-1 rounded-xl border border-border bg-cardAlt px-3 py-2.5 text-center text-[13px] font-bold text-zinc-200"
           >
-            🏎️ Vitrin
+            📸 Galeri
           </Link>
         </div>
       </div>

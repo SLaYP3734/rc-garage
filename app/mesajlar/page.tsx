@@ -60,7 +60,7 @@ export default function MessagesInboxPage() {
       (data || []).forEach((m: any) => {
         const isMine = m.sender_id === user.id;
         const otherId = isMine ? m.receiver_id : m.sender_id;
-        const otherUsername = (isMine ? m.receiver?.username : m.sender?.username) || 'RC Garage üyesi';
+        const otherUsername = (isMine ? m.receiver?.username : m.sender?.username) || 'RC Atölyesi üyesi';
 
         if (!map.has(otherId)) {
           map.set(otherId, {

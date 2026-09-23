@@ -98,7 +98,7 @@ export default async function ProblemPage({ params }: { params: { slug: string }
 
       <div className="mt-2 flex items-center gap-2 text-[12px] text-mutedDim">
         <span className="font-semibold text-zinc-400">
-          {(problem as any).profiles?.username || 'RC Garage üyesi'}
+          {(problem as any).profiles?.username || 'RC Atölyesi üyesi'}
         </span>
         <span>·</span>
         <span>{timeAgo(problem.created_at)}</span>
@@ -141,7 +141,7 @@ export default async function ProblemPage({ params }: { params: { slug: string }
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-[12px]">
                 <span className="font-semibold text-zinc-300">
-                  {answer.profiles?.username || 'RC Garage üyesi'}
+                  {answer.profiles?.username || 'RC Atölyesi üyesi'}
                 </span>
                 <span className="text-mutedDim">{timeAgo(answer.created_at)}</span>
                 {answer.is_accepted && (

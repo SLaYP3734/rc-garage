@@ -68,7 +68,7 @@ export async function generateMetadata({
 
   return {
     title: `${brandName} — Sorular, İlanlar ve Araçlar`,
-    description: `${brandName} ile ilgili sorular, ikinci el/sıfır ilanlar ve topluluğun paylaştığı ${brandName} araçları RC Garage'da.`
+    description: `${brandName} ile ilgili sorular, ikinci el/sıfır ilanlar ve topluluğun paylaştığı ${brandName} araçları RC Atölyesi'nde.`
   };
 }
 

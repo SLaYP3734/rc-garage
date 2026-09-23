@@ -64,7 +64,7 @@ export async function generateMetadata({
 
   return {
     title: `${data.profile.username} — Satıcı Profili`,
-    description: `${data.profile.username} kullanıcısının RC Garage'daki ilanları, paylaştığı araçlar ve topluluk geçmişi.`
+    description: `${data.profile.username} kullanıcısının RC Atölyesi'ndeki ilanları, paylaştığı araçlar ve topluluk geçmişi.`
   };
 }
 

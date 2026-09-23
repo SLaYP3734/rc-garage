@@ -58,7 +58,7 @@ export default function ConversationPage() {
         .eq('id', otherId)
         .single();
 
-      if (!cancelled) setOtherUsername(otherProfile?.username || 'RC Garage üyesi');
+      if (!cancelled) setOtherUsername(otherProfile?.username || 'RC Atölyesi üyesi');
     }
 
     init();

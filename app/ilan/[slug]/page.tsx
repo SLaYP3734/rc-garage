@@ -130,7 +130,7 @@ export default async function ListingPage({ params }: { params: { slug: string }
             {sellerUsername}
           </Link>
         ) : (
-          <span className="font-semibold text-zinc-400">RC Garage üyesi</span>
+          <span className="font-semibold text-zinc-400">RC Atölyesi üyesi</span>
         )}
         <span>·</span>
         <span>{timeAgo(listing.created_at)}</span>

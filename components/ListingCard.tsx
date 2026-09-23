@@ -59,7 +59,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
 
         <div className="mt-2.5 flex items-center gap-3 text-[11px] text-mutedDim">
           <span className="font-semibold text-zinc-400">
-            {listing.author_username || 'RC Garage üyesi'}
+            {listing.author_username || 'RC Atölyesi üyesi'}
           </span>
           <span>·</span>
           <span>{timeAgo(listing.created_at)}</span>

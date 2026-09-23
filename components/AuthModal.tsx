@@ -134,13 +134,13 @@ export default function AuthModal({
 
         <div className="mb-5">
           <strong className="text-2xl tracking-wide">
-            <i className="not-italic text-accent">RC</i> GARAGE
+            <i className="not-italic text-accent">RC</i> ATÖLYESİ
           </strong>
         </div>
 
         <h2 className="text-2xl font-bold">{registerMode ? 'Kayıt Ol' : 'Giriş Yap'}</h2>
         <p className="mb-6 mt-2 text-sm text-muted">
-          {registerMode ? 'RC Garage ailesine katıl.' : "RC Garage'a hoş geldin."}
+          {registerMode ? 'RC Atölyesi ailesine katıl.' : "RC Atölyesi'ne hoş geldin."}
         </p>
 
         <input

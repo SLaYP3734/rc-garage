@@ -10,7 +10,7 @@ export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: 'Al / Sat',
-  description: 'RC araç, yedek parça ve elektronik ilanları — RC Garage topluluğundan alım satım.'
+  description: 'RC araç, yedek parça ve elektronik ilanları — RC Atölyesi topluluğundan alım satım.'
 };
 
 export default async function AlSatPage({
