@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import AuthModal from '@/components/AuthModal';
+import ModalPortal from '@/components/ModalPortal';
 
 const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
 
@@ -72,6 +73,7 @@ export default function ContactButton() {
       </div>
 
       {open && (
+        <ModalPortal>
         <div
           className="fixed inset-0 z-[1500] flex items-center justify-center bg-black/75 p-5 backdrop-blur-sm"
           onClick={(e) => {
@@ -124,6 +126,7 @@ export default function ContactButton() {
             {status && <p className="mt-2 text-center text-[13px] text-accent2">{status}</p>}
           </div>
         </div>
+        </ModalPortal>
       )}
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />

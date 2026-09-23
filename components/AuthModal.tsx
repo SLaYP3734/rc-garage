@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Turnstile from '@/components/Turnstile';
+import ModalPortal from '@/components/ModalPortal';
 
 const MIN_AGE = 13;
 
@@ -118,6 +119,7 @@ export default function AuthModal({
   }
 
   return (
+    <ModalPortal>
     <div
       className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/75 p-5 backdrop-blur-sm"
       onClick={(e) => {
@@ -216,5 +218,6 @@ export default function AuthModal({
         </button>
       </div>
     </div>
+    </ModalPortal>
   );
 }

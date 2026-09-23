@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import ImageUpload from '@/components/ImageUpload';
 import { VEHICLE_TYPES, VehicleType } from '@/lib/types';
+import ModalPortal from '@/components/ModalPortal';
 
 export default function GarageCarModal({
   userId,
@@ -61,6 +62,7 @@ export default function GarageCarModal({
   }
 
   return (
+    <ModalPortal>
     <div
       className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/78 p-[18px] backdrop-blur-sm"
       onClick={(e) => {
@@ -119,6 +121,7 @@ export default function GarageCarModal({
         )}
       </div>
     </div>
+    </ModalPortal>
   );
 }
 
