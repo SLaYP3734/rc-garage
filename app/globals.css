@@ -44,3 +44,17 @@ textarea::placeholder {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Header'ın altındaki hareketli dikkat çekme şeridi */
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee-scroll 22s linear infinite;
+}

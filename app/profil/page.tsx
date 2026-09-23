@@ -21,28 +21,35 @@ export default function ProfilPage() {
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [problemCount, setProblemCount] = useState(0);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const [cars, setCars] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
 
   const loadData = useCallback(
     async (uid: string) => {
-      const [{ data: profile }, { data: garageCars }, { count }] = await Promise.all([
-        supabase.from('profiles').select('username, avatar_url').eq('id', uid).single(),
-        supabase
-          .from('garage_cars')
-          .select('*')
-          .eq('user_id', uid)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('problems')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', uid)
-      ]);
+      const [{ data: profile }, { data: garageCars }, { count }, { count: followers }, { count: followingC }] =
+        await Promise.all([
+          supabase.from('profiles').select('username, avatar_url').eq('id', uid).single(),
+          supabase
+            .from('garage_cars')
+            .select('*')
+            .eq('user_id', uid)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('problems')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', uid),
+          supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('followed_id', uid),
+          supabase.from('follows').select('followed_id', { count: 'exact', head: true }).eq('follower_id', uid)
+        ]);
 
       setUsername(profile?.username ?? '');
       setAvatarUrl(profile?.avatar_url ?? null);
       setCars(garageCars ?? []);
       setProblemCount(count ?? 0);
+      setFollowerCount(followers ?? 0);
+      setFollowingCount(followingC ?? 0);
     },
     [supabase]
   );
@@ -107,10 +114,11 @@ export default function ProfilPage() {
         </div>
       </div>
 
-      <div className="my-5 grid grid-cols-3 gap-2 rounded-2xl bg-cardAlt px-2 py-[18px]">
+      <div className="my-5 grid grid-cols-4 gap-2 rounded-2xl bg-cardAlt px-2 py-[18px]">
         <Stat value={problemCount} label="Sorun" />
         <Stat value={cars.length} label="Araç" />
-        <Stat value={0} label="Takipçi" />
+        <Stat value={followerCount} label="Takipçi" />
+        <Stat value={followingCount} label="Takip" />
       </div>
 
       <button

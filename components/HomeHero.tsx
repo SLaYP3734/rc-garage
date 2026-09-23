@@ -28,10 +28,6 @@ export default function HomeHero({ stats }: { stats: Stats }) {
       />
 
       <div className="relative">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wide text-accent2">
-          🔧 Türkiye&apos;nin RC Atölyesi
-        </span>
-
         {ADMIN_USER_ID && (
           <Link
             href={`/mesajlar/${ADMIN_USER_ID}`}

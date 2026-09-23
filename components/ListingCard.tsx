@@ -1,21 +1,28 @@
-import Link from 'next/link';
+'use client';
+
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Listing, CONDITION_LABEL, vehicleTypeIcon } from '@/lib/types';
+import { Listing, CONDITION_LABEL } from '@/lib/types';
 import { brandColor } from '@/lib/brand';
 import { timeAgo } from '@/lib/time';
+import AuthorLink from './AuthorLink';
 
 function formatPrice(price: number | null) {
   if (price === null || price === undefined) return 'Fiyat belirtilmemiş';
   return `${new Intl.NumberFormat('tr-TR').format(price)} TL`;
 }
 
+// Kartın tamamı tıklanabilir (ilan detayına gider), kullanıcı adı ise
+// kendi profiline gitsin diye ayrı bir <a> — bu yüzden kart artık bir
+// <Link> değil, tıklamayı kendisi yöneten bir <div> (bkz. ProblemCard).
 export default function ListingCard({ listing }: { listing: Listing }) {
+  const router = useRouter();
   const color = brandColor(listing.brand);
 
   return (
-    <Link
-      href={`/ilan/${listing.slug}`}
-      className="group relative mx-3 mb-2.5 flex gap-3 overflow-hidden rounded-2xl border border-border/70 bg-card/60 px-3.5 py-3.5 transition hover:-translate-y-0.5 hover:border-border hover:bg-cardAlt/70 hover:shadow-lg hover:shadow-black/30"
+    <div
+      onClick={() => router.push(`/ilan/${listing.slug}`)}
+      className="group relative mx-3 mb-2.5 flex cursor-pointer gap-3 overflow-hidden rounded-2xl border border-border/70 bg-card/60 px-3.5 py-3.5 transition hover:-translate-y-0.5 hover:border-border hover:bg-cardAlt/70 hover:shadow-lg hover:shadow-black/30"
     >
       <span
         className="absolute left-0 top-0 h-full w-[3px] opacity-90 transition-all group-hover:w-[4px]"
@@ -25,9 +32,6 @@ export default function ListingCard({ listing }: { listing: Listing }) {
 
       <div className="min-w-0 flex-1 pl-1.5">
         <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
-          <span className="rounded-md bg-cardAlt px-1.5 py-0.5 text-[12px]">
-            {vehicleTypeIcon(listing.vehicle_type)}
-          </span>
           {listing.brand && (
             <span
               className="rounded-md px-2 py-0.5 text-[11px] font-semibold"
@@ -61,9 +65,14 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         </p>
 
         <div className="mt-2.5 flex items-center gap-3 text-[11px] text-mutedDim">
-          <span className="font-semibold text-zinc-400">
-            {listing.author_username || 'RC Atölyesi üyesi'}
-          </span>
+          {listing.author_username ? (
+            <AuthorLink
+              username={listing.author_username}
+              className="font-semibold text-zinc-400 hover:text-accent2"
+            />
+          ) : (
+            <span className="font-semibold text-zinc-400">RC Atölyesi üyesi</span>
+          )}
           <span>·</span>
           <span>{timeAgo(listing.created_at)}</span>
           <span className="ml-auto rounded-full bg-cardAlt px-2 py-0.5 text-[12px] font-extrabold text-accent">
@@ -83,6 +92,6 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           />
         </div>
       )}
-    </Link>
+    </div>
   );
 }

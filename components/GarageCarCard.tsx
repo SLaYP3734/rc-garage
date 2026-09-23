@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { brandColor } from '@/lib/brand';
 import { brandSlug } from '@/lib/slug';
-import { GarageCar, vehicleTypeIcon } from '@/lib/types';
+import { GarageCar } from '@/lib/types';
 
 export default function GarageCarCard({
   car,
@@ -70,7 +70,6 @@ export default function GarageCarCard({
 
       <div className="p-4">
         <div className="mb-2 flex items-center gap-2">
-          <span className="text-[13px]">{vehicleTypeIcon(car.vehicle_type)}</span>
           <span
             className="h-2.5 w-2.5 shrink-0 rounded-full"
             style={{ backgroundColor: brandColor(car.brand) }}
@@ -81,11 +80,17 @@ export default function GarageCarCard({
           {car.scale && <span className="ml-auto text-xs text-mutedDim">{car.scale}</span>}
         </div>
 
-        {showOwner && (
-          <p className="mb-1.5 text-[12px] font-semibold text-zinc-400">
-            {car.author_username || 'RC Atölyesi üyesi'}
-          </p>
-        )}
+        {showOwner &&
+          (car.author_username ? (
+            <Link
+              href={`/satici/${car.author_username}`}
+              className="mb-1.5 block text-[12px] font-semibold text-zinc-400 hover:text-accent2"
+            >
+              {car.author_username}
+            </Link>
+          ) : (
+            <p className="mb-1.5 text-[12px] font-semibold text-zinc-400">RC Atölyesi üyesi</p>
+          ))}
 
         {(car.motor || car.esc || car.battery) && (
           <p className="text-xs text-muted">

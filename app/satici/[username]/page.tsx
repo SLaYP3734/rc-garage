@@ -8,6 +8,7 @@ import ListingCard from '@/components/ListingCard';
 import GarageCarCard from '@/components/GarageCarCard';
 import Avatar from '@/components/Avatar';
 import StarRating from '@/components/StarRating';
+import FollowButton from '@/components/FollowButton';
 
 export const revalidate = 60;
 
@@ -29,7 +30,9 @@ async function getSellerData(username: string) {
     { count: totalListingCount },
     { count: soldCount },
     { data: ratingStats },
-    { data: recentRatings }
+    { data: recentRatings },
+    { count: followerCount },
+    { count: followingCount }
   ] = await Promise.all([
     supabase
       .from('listings')
@@ -65,7 +68,9 @@ async function getSellerData(username: string) {
       .select('id, listing_id, seller_id, rater_id, rating, comment, created_at, profiles!seller_ratings_rater_id_fkey(username)')
       .eq('seller_id', profile.id)
       .order('created_at', { ascending: false })
-      .limit(10)
+      .limit(10),
+    supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('followed_id', profile.id),
+    supabase.from('follows').select('followed_id', { count: 'exact', head: true }).eq('follower_id', profile.id)
   ]);
 
   return {
@@ -79,7 +84,9 @@ async function getSellerData(username: string) {
     recentRatings: ((recentRatings ?? []) as any[]).map((r) => ({
       ...r,
       rater_username: r.profiles?.username ?? null
-    })) as SellerRating[]
+    })) as SellerRating[],
+    followerCount: followerCount ?? 0,
+    followingCount: followingCount ?? 0
   };
 }
 
@@ -101,7 +108,18 @@ export default async function SellerPage({ params }: { params: { username: strin
   const data = await getSellerData(params.username);
   if (!data) notFound();
 
-  const { profile, listings, cars, solvedCount, totalListingCount, soldCount, ratingStats, recentRatings } = data;
+  const {
+    profile,
+    listings,
+    cars,
+    solvedCount,
+    totalListingCount,
+    soldCount,
+    ratingStats,
+    recentRatings,
+    followerCount,
+    followingCount
+  } = data;
   const badge = badgeForSolvedCount(solvedCount);
   const rank = sellerRank(soldCount, ratingStats.avg_rating);
 
@@ -130,6 +148,10 @@ export default async function SellerPage({ params }: { params: { username: strin
               </span>
             </div>
           )}
+          <p className="mt-1 text-[11px] text-mutedDim">
+            <strong className="text-zinc-300">{followerCount}</strong> takipçi ·{' '}
+            <strong className="text-zinc-300">{followingCount}</strong> takip edilen
+          </p>
         </div>
       </div>
 
@@ -140,12 +162,15 @@ export default async function SellerPage({ params }: { params: { username: strin
         <Stat value={solvedCount} label="Çözülen Soru" />
       </div>
 
-      <Link
-        href={`/mesajlar/${profile.id}`}
-        className="block w-full rounded-xl bg-accent py-3 text-center text-sm font-extrabold text-black"
-      >
-        💬 Mesaj Gönder
-      </Link>
+      <div className="space-y-2">
+        <FollowButton targetUserId={profile.id} />
+        <Link
+          href={`/mesajlar/${profile.id}`}
+          className="block w-full rounded-xl border border-border bg-cardAlt py-3 text-center text-sm font-extrabold text-zinc-200"
+        >
+          💬 Mesaj Gönder
+        </Link>
+      </div>
 
       {listings.length > 0 && (
         <section className="mt-7">

@@ -14,22 +14,33 @@ type Row = {
   author_username?: string | null;
 };
 
-const TABS: { key: 'problems' | 'listings' | 'garage_cars'; label: string; icon: string }[] = [
+type UserRow = {
+  id: string;
+  username: string | null;
+  full_name: string | null;
+  is_banned: boolean;
+  created_at: string;
+};
+
+const CONTENT_TABS: { key: 'problems' | 'listings' | 'garage_cars'; label: string; icon: string }[] = [
   { key: 'problems', label: 'Sorular', icon: '🔧' },
   { key: 'listings', label: 'İlanlar', icon: '🛒' },
   { key: 'garage_cars', label: 'Garaj Araçları', icon: '🏎️' }
 ];
 
-// Yönetici paneli: silme yetkisi gerçek güvenliğini Supabase'deki RLS
-// politikalarından alıyor (schema-admin.sql) — burası sadece kolay bir
-// arayüz. Yani bu sayfayı biri bulsa bile, admin UUID'i doğru
-// girilmediği sürece silme işlemi veritabanı tarafında reddedilir.
+// Yönetici paneli: silme/yasaklama yetkisinin gerçek güvenliği
+// Supabase'deki RLS politikalarından geliyor (schema-admin.sql,
+// schema-ban.sql) — burası sadece kolay bir arayüz. Yani bu sayfayı
+// biri bulsa bile, admin UUID'i doğru girilmediği sürece işlemler
+// veritabanı tarafında reddedilir.
 export default function AdminPage() {
   const supabase = createClient();
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [tab, setTab] = useState<'problems' | 'listings' | 'garage_cars'>('problems');
+  const [tab, setTab] = useState<'problems' | 'listings' | 'garage_cars' | 'users'>('problems');
   const [rows, setRows] = useState<Row[]>([]);
+  const [users, setUsers] = useState<UserRow[]>([]);
+  const [userSearch, setUserSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -42,10 +53,11 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!isAdmin) return;
-    load();
+    if (tab === 'users') loadUsers();
+    else loadContent();
   }, [isAdmin, tab]);
 
-  async function load() {
+  async function loadContent() {
     setLoading(true);
     const { data } = await supabase
       .from(tab)
@@ -64,7 +76,28 @@ export default function AdminPage() {
     setLoading(false);
   }
 
-  async function handleDelete(id: string) {
+  async function loadUsers() {
+    setLoading(true);
+    let query = supabase
+      .from('profiles')
+      .select('id, username, full_name, is_banned, created_at')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (userSearch.trim()) {
+      query = supabase
+        .from('profiles')
+        .select('id, username, full_name, is_banned, created_at')
+        .ilike('username', `%${userSearch.trim()}%`)
+        .limit(50);
+    }
+
+    const { data } = await query;
+    setUsers((data ?? []) as UserRow[]);
+    setLoading(false);
+  }
+
+  async function handleDeleteContent(id: string) {
     if (!confirm('Bu kaydı kalıcı olarak silmek istediğine emin misin?')) return;
     setBusyId(id);
     const { error } = await supabase.from(tab).delete().eq('id', id);
@@ -76,6 +109,24 @@ export default function AdminPage() {
     }
 
     setRows((prev) => prev.filter((r) => r.id !== id));
+  }
+
+  async function toggleBan(user: UserRow) {
+    const next = !user.is_banned;
+    if (next && !confirm(`${user.username || 'Bu kullanıcı'} sitedeki erişimini hemen kapatmak istediğine emin misin?`)) {
+      return;
+    }
+
+    setBusyId(user.id);
+    const { error } = await supabase.from('profiles').update({ is_banned: next }).eq('id', user.id);
+    setBusyId(null);
+
+    if (error) {
+      alert('İşlem yapılamadı: ' + error.message);
+      return;
+    }
+
+    setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, is_banned: next } : u)));
   }
 
   if (checking) {
@@ -94,10 +145,10 @@ export default function AdminPage() {
   return (
     <div className="px-4 py-5">
       <h1 className="mb-1 text-lg font-bold">🛡️ Yönetici Paneli</h1>
-      <p className="mb-4 text-sm text-muted">Kural dışı içerikleri buradan silebilirsin.</p>
+      <p className="mb-4 text-sm text-muted">Kural dışı içerikleri sil, gerekirse kullanıcı erişimini kapat.</p>
 
-      <div className="mb-4 flex gap-2">
-        {TABS.map((t) => (
+      <div className="mb-4 flex flex-wrap gap-2">
+        {CONTENT_TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
@@ -108,34 +159,98 @@ export default function AdminPage() {
             {t.icon} {t.label}
           </button>
         ))}
+        <button
+          onClick={() => setTab('users')}
+          className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${
+            tab === 'users' ? 'border-accent bg-accent/15 text-accent2' : 'border-border text-muted'
+          }`}
+        >
+          👥 Kullanıcılar
+        </button>
       </div>
 
       {loading && <p className="text-sm text-muted">Yükleniyor...</p>}
 
-      {!loading && rows.length === 0 && <p className="text-sm text-muted">Kayıt yok.</p>}
-
-      <div className="space-y-2">
-        {rows.map((row) => (
-          <div
-            key={row.id}
-            className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3.5 py-3"
-          >
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-semibold text-zinc-100">
-                {row.title || [row.brand, row.model].filter(Boolean).join(' ') || 'Kayıt'}
-              </p>
-              <p className="text-[11px] text-mutedDim">{row.author_username || 'RC Atölyesi üyesi'}</p>
-            </div>
+      {tab === 'users' ? (
+        <>
+          <div className="mb-3 flex gap-2">
+            <input
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && loadUsers()}
+              placeholder="Kullanıcı adına göre ara..."
+              className="h-[42px] flex-1 rounded-xl border border-border bg-cardAlt px-3.5 text-sm outline-none focus:border-accent"
+            />
             <button
-              onClick={() => handleDelete(row.id)}
-              disabled={busyId === row.id}
-              className="shrink-0 rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-[11px] font-bold text-red-400 disabled:opacity-50"
+              onClick={loadUsers}
+              className="rounded-xl border border-border bg-cardAlt px-4 text-sm font-semibold text-zinc-300"
             >
-              {busyId === row.id ? '...' : '🗑️ Sil'}
+              Ara
             </button>
           </div>
-        ))}
-      </div>
+
+          {!loading && users.length === 0 && <p className="text-sm text-muted">Kullanıcı bulunamadı.</p>}
+
+          <div className="space-y-2">
+            {users.map((u) => (
+              <div
+                key={u.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3.5 py-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-semibold text-zinc-100">
+                    {u.username || 'İsimsiz kullanıcı'}
+                    {u.is_banned && (
+                      <span className="ml-1.5 rounded-full bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold text-red-400">
+                        YASAKLI
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-[11px] text-mutedDim">{u.full_name || '—'}</p>
+                </div>
+                <button
+                  onClick={() => toggleBan(u)}
+                  disabled={busyId === u.id || u.id === ADMIN_USER_ID}
+                  className={`shrink-0 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold disabled:opacity-40 ${
+                    u.is_banned
+                      ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
+                      : 'border-red-500/40 bg-red-500/10 text-red-400'
+                  }`}
+                >
+                  {busyId === u.id ? '...' : u.is_banned ? '✅ Erişimi Aç' : '🚫 Erişimi Kapat'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          {!loading && rows.length === 0 && <p className="text-sm text-muted">Kayıt yok.</p>}
+
+          <div className="space-y-2">
+            {rows.map((row) => (
+              <div
+                key={row.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3.5 py-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-semibold text-zinc-100">
+                    {row.title || [row.brand, row.model].filter(Boolean).join(' ') || 'Kayıt'}
+                  </p>
+                  <p className="text-[11px] text-mutedDim">{row.author_username || 'RC Atölyesi üyesi'}</p>
+                </div>
+                <button
+                  onClick={() => handleDeleteContent(row.id)}
+                  disabled={busyId === row.id}
+                  className="shrink-0 rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-[11px] font-bold text-red-400 disabled:opacity-50"
+                >
+                  {busyId === row.id ? '...' : '🗑️ Sil'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
