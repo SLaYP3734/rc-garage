@@ -20,7 +20,7 @@ async function getBrandData(slug: string) {
     supabase
       .from('problems')
       .select(
-        'id, user_id, title, brand, model, category, description, image_url, status, slug, answer_count, created_at, profiles(username)'
+        'id, user_id, title, brand, model, category, vehicle_type, description, image_url, status, slug, answer_count, created_at, profiles(username)'
       )
       .ilike('brand', searchText)
       .order('created_at', { ascending: false })
@@ -28,14 +28,16 @@ async function getBrandData(slug: string) {
     supabase
       .from('listings')
       .select(
-        'id, user_id, title, brand, model, category, condition, price, description, image_url, status, slug, created_at, profiles(username)'
+        'id, user_id, title, brand, model, category, vehicle_type, condition, price, description, image_url, status, slug, created_at, profiles(username)'
       )
       .ilike('brand', searchText)
       .order('created_at', { ascending: false })
       .limit(20),
     supabase
       .from('garage_cars')
-      .select('id, user_id, brand, model, scale, motor, esc, battery, notes, image_url, like_count, created_at')
+      .select(
+        'id, user_id, brand, model, vehicle_type, scale, motor, esc, battery, notes, image_url, like_count, created_at'
+      )
       .ilike('brand', searchText)
       .order('like_count', { ascending: false })
       .limit(20)

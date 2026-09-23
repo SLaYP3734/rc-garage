@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Problem } from '@/lib/types';
+import { Problem, vehicleTypeIcon } from '@/lib/types';
 import { brandColor } from '@/lib/brand';
 import { timeAgo } from '@/lib/time';
 import StatusBadge from './StatusBadge';
@@ -27,6 +27,9 @@ export default function ProblemCard({ problem }: { problem: Problem }) {
 
       <div className="min-w-0 flex-1 pl-1.5">
         <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+          <span className="rounded-md bg-cardAlt px-1.5 py-0.5 text-[12px]">
+            {vehicleTypeIcon(problem.vehicle_type)}
+          </span>
           {problem.brand && (
             <span
               className="rounded-md px-2 py-0.5 text-[11px] font-semibold"

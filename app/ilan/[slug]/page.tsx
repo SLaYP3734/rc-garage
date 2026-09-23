@@ -7,6 +7,7 @@ import { brandColor } from '@/lib/brand';
 import { timeAgo } from '@/lib/time';
 import { CONDITION_LABEL, LISTING_CATEGORIES, badgeForSolvedCount } from '@/lib/types';
 import MarkSoldButton from '@/components/MarkSoldButton';
+import Avatar from '@/components/Avatar';
 
 function formatPrice(price: number | null) {
   if (price === null || price === undefined) return 'Fiyat belirtilmemiş';
@@ -19,7 +20,7 @@ async function getListing(slug: string) {
   const { data: listing } = await supabase
     .from('listings')
     .select(
-      'id, user_id, title, brand, model, category, condition, price, description, image_url, status, slug, created_at, profiles(username)'
+      'id, user_id, title, brand, model, category, condition, price, description, image_url, status, slug, created_at, profiles(username, avatar_url)'
     )
     .eq('slug', slug)
     .single();
@@ -67,6 +68,7 @@ export default async function ListingPage({ params }: { params: { slug: string }
   const categoryLabel = LISTING_CATEGORIES.find((c) => c.value === listing.category)?.label;
   const isOwner = user?.id === listing.user_id;
   const sellerUsername = (listing as any).profiles?.username as string | null;
+  const sellerAvatarUrl = (listing as any).profiles?.avatar_url as string | null;
 
   let sellerInfo: { createdAt: string; solvedCount: number; listingCount: number } | null = null;
   if (sellerUsername) {
@@ -149,9 +151,7 @@ export default async function ListingPage({ params }: { params: { slug: string }
           href={`/satici/${sellerUsername}`}
           className="mt-3 flex items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-2.5"
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-extrabold text-black">
-            {sellerUsername.charAt(0).toUpperCase()}
-          </span>
+          <Avatar url={sellerAvatarUrl} name={sellerUsername} size={36} />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[12.5px] font-semibold text-zinc-200">
               {sellerUsername}

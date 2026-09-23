@@ -6,6 +6,7 @@ import { timeAgo } from '@/lib/time';
 import { badgeForSolvedCount, Listing, GarageCar } from '@/lib/types';
 import ListingCard from '@/components/ListingCard';
 import GarageCarCard from '@/components/GarageCarCard';
+import Avatar from '@/components/Avatar';
 
 export const revalidate = 60;
 
@@ -14,7 +15,7 @@ async function getSellerData(username: string) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, username, created_at')
+    .select('id, username, avatar_url, created_at')
     .eq('username', username)
     .maybeSingle();
 
@@ -25,7 +26,7 @@ async function getSellerData(username: string) {
       supabase
         .from('listings')
         .select(
-          'id, user_id, title, brand, model, category, condition, price, description, image_url, status, slug, created_at'
+          'id, user_id, title, brand, model, category, vehicle_type, condition, price, description, image_url, status, slug, created_at'
         )
         .eq('user_id', profile.id)
         .eq('status', 'active')
@@ -33,7 +34,9 @@ async function getSellerData(username: string) {
         .limit(20),
       supabase
         .from('garage_cars')
-        .select('id, user_id, brand, model, scale, motor, esc, battery, notes, image_url, like_count, created_at')
+        .select(
+          'id, user_id, brand, model, vehicle_type, scale, motor, esc, battery, notes, image_url, like_count, created_at'
+        )
         .eq('user_id', profile.id)
         .order('like_count', { ascending: false })
         .limit(6),
@@ -78,9 +81,7 @@ export default async function SellerPage({ params }: { params: { username: strin
   return (
     <div className="px-4 py-6">
       <div className="flex items-center gap-4">
-        <div className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-accent text-[28px] font-extrabold text-black">
-          {profile.username?.charAt(0).toUpperCase() || '?'}
-        </div>
+        <Avatar url={profile.avatar_url} name={profile.username} size={72} />
         <div>
           <h1 className="text-[19px] font-extrabold">{profile.username}</h1>
           <p className="text-[12px] text-muted">Üye olalı {timeAgo(profile.created_at)}</p>

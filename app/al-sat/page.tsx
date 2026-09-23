@@ -5,6 +5,7 @@ import { Listing } from '@/lib/types';
 import ListingCard from '@/components/ListingCard';
 import ListingSearchBox from '@/components/ListingSearchBox';
 import ListingCategoryChips from '@/components/ListingCategoryChips';
+import VehicleTypeChips from '@/components/VehicleTypeChips';
 
 export const revalidate = 60;
 
@@ -16,14 +17,14 @@ export const metadata: Metadata = {
 export default async function AlSatPage({
   searchParams
 }: {
-  searchParams: { q?: string; kategori?: string };
+  searchParams: { q?: string; kategori?: string; tur?: string };
 }) {
   const supabase = createClient();
 
   let query = supabase
     .from('listings')
     .select(
-      'id, user_id, title, brand, model, category, condition, price, description, image_url, status, slug, created_at, profiles(username)'
+      'id, user_id, title, brand, model, category, vehicle_type, condition, price, description, image_url, status, slug, created_at, profiles(username)'
     )
     .order('status', { ascending: true })
     .order('created_at', { ascending: false })
@@ -31,6 +32,10 @@ export default async function AlSatPage({
 
   if (searchParams.kategori) {
     query = query.eq('category', searchParams.kategori);
+  }
+
+  if (searchParams.tur) {
+    query = query.eq('vehicle_type', searchParams.tur);
   }
 
   if (searchParams.q) {
@@ -49,6 +54,7 @@ export default async function AlSatPage({
   return (
     <div>
       <ListingSearchBox />
+      <VehicleTypeChips basePath="/al-sat" />
       <ListingCategoryChips />
 
       <div className="flex items-center justify-between px-4 pb-2 pt-1">

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import GarageCarModal from '@/components/GarageCarModal';
 import GarageCarCard from '@/components/GarageCarCard';
 import AuthModal from '@/components/AuthModal';
+import AvatarUpload from '@/components/AvatarUpload';
 
 export default function ProfilPage() {
   const supabase = createClient();
@@ -15,6 +16,7 @@ export default function ProfilPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [username, setUsername] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [problemCount, setProblemCount] = useState(0);
   const [cars, setCars] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -22,7 +24,7 @@ export default function ProfilPage() {
   const loadData = useCallback(
     async (uid: string) => {
       const [{ data: profile }, { data: garageCars }, { count }] = await Promise.all([
-        supabase.from('profiles').select('username').eq('id', uid).single(),
+        supabase.from('profiles').select('username, avatar_url').eq('id', uid).single(),
         supabase
           .from('garage_cars')
           .select('*')
@@ -35,11 +37,19 @@ export default function ProfilPage() {
       ]);
 
       setUsername(profile?.username ?? '');
+      setAvatarUrl(profile?.avatar_url ?? null);
       setCars(garageCars ?? []);
       setProblemCount(count ?? 0);
     },
     [supabase]
   );
+
+  async function handleAvatarChange(url: string) {
+    setAvatarUrl(url);
+    if (userId) {
+      await supabase.from('profiles').update({ avatar_url: url }).eq('id', userId);
+    }
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -85,9 +95,9 @@ export default function ProfilPage() {
   return (
     <div className="mx-auto max-w-[600px] px-[18px] pb-10 pt-6">
       <div className="flex items-center gap-[18px]">
-        <div className="flex h-[82px] w-[82px] items-center justify-center rounded-full bg-accent text-[34px] font-extrabold">
-          {username ? username.charAt(0).toUpperCase() : '?'}
-        </div>
+        {userId && (
+          <AvatarUpload userId={userId} value={avatarUrl} name={username} onChange={handleAvatarChange} />
+        )}
         <div>
           <h2 className="text-[23px] font-bold">{username || 'RC Atölyesi üyesi'}</h2>
           <p className="text-muted">RC Atölyesi üyesi</p>

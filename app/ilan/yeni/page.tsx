@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { buildListingSlug } from '@/lib/slug';
-import { LISTING_CATEGORIES, ListingCondition } from '@/lib/types';
+import { LISTING_CATEGORIES, ListingCondition, VEHICLE_TYPES, VehicleType } from '@/lib/types';
 import AuthModal from '@/components/AuthModal';
 import ImageUpload from '@/components/ImageUpload';
 
@@ -19,6 +19,7 @@ export default function NewListingPage() {
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
   const [category, setCategory] = useState<string>(LISTING_CATEGORIES[0].value);
+  const [vehicleType, setVehicleType] = useState<VehicleType>('araba');
   const [condition, setCondition] = useState<ListingCondition>('kullanilmis');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
@@ -64,6 +65,7 @@ export default function NewListingPage() {
         brand: brand.trim(),
         model: model.trim(),
         category,
+        vehicle_type: vehicleType,
         condition,
         price: parsedPrice,
         description: description.trim(),
@@ -97,6 +99,24 @@ export default function NewListingPage() {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="grid grid-cols-3 gap-2">
+          {VEHICLE_TYPES.map((v) => (
+            <button
+              key={v.value}
+              type="button"
+              onClick={() => setVehicleType(v.value)}
+              className={`flex h-[54px] flex-col items-center justify-center gap-0.5 rounded-xl border text-[11px] font-semibold ${
+                vehicleType === v.value
+                  ? 'border-accent bg-accent/15 text-accent2'
+                  : 'border-border bg-cardAlt text-muted'
+              }`}
+            >
+              <span className="text-base leading-none">{v.icon}</span>
+              {v.label}
+            </button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <Input placeholder="Marka (Traxxas...)" value={brand} onChange={setBrand} />
           <Input placeholder="Model (Maxx...)" value={model} onChange={setModel} />

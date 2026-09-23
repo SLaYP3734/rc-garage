@@ -4,6 +4,7 @@ import { Problem } from '@/lib/types';
 import ProblemCard from '@/components/ProblemCard';
 import SearchBox from '@/components/SearchBox';
 import CategoryChips from '@/components/CategoryChips';
+import VehicleTypeChips from '@/components/VehicleTypeChips';
 import HomeHero from '@/components/HomeHero';
 import TopHelpers from '@/components/TopHelpers';
 import FeaturedCar from '@/components/FeaturedCar';
@@ -31,7 +32,7 @@ async function getStats(supabase: ReturnType<typeof createClient>) {
 export default async function HomePage({
   searchParams
 }: {
-  searchParams: { q?: string; kategori?: string };
+  searchParams: { q?: string; kategori?: string; tur?: string };
 }) {
   const supabase = createClient();
 
@@ -53,13 +54,17 @@ export default async function HomePage({
   let query = supabase
     .from('problems')
     .select(
-      'id, user_id, title, brand, model, category, description, image_url, status, slug, answer_count, created_at, profiles(username)'
+      'id, user_id, title, brand, model, category, vehicle_type, description, image_url, status, slug, answer_count, created_at, profiles(username)'
     )
     .order('created_at', { ascending: false })
     .limit(30);
 
   if (searchParams.kategori) {
     query = query.eq('category', searchParams.kategori);
+  }
+
+  if (searchParams.tur) {
+    query = query.eq('vehicle_type', searchParams.tur);
   }
 
   if (searchParams.q) {
@@ -83,12 +88,13 @@ export default async function HomePage({
       <TopHelpers helpers={topHelpers ?? []} />
 
       <SearchBox />
+      <VehicleTypeChips basePath="/" />
       <CategoryChips />
 
       <div className="flex items-center justify-between px-4 pb-2 pt-1">
         <h2 className="text-[15px] font-bold text-zinc-300">Son Sorular</h2>
         <Link href="/sorun/yeni" className="text-[13px] font-semibold text-accent2">
-          + Arıza Konusu Aç
+          + Yeni Sorun
         </Link>
       </div>
 

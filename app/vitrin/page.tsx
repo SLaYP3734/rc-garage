@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { GarageCar } from '@/lib/types';
 import { attachUsernames } from '@/lib/attachUsernames';
 import GarageCarCard from '@/components/GarageCarCard';
+import VehicleTypeChips from '@/components/VehicleTypeChips';
 
 export const revalidate = 60;
 
@@ -12,27 +13,43 @@ export const metadata: Metadata = {
   description: 'RC Atölyesi topluluğunun paylaştığı araçlar — beğen, ilham al.'
 };
 
-export default async function VitrinPage() {
+export default async function VitrinPage({
+  searchParams
+}: {
+  searchParams: { tur?: string };
+}) {
   const supabase = createClient();
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('garage_cars')
-    .select('id, user_id, brand, model, scale, motor, esc, battery, notes, image_url, like_count, created_at')
+    .select(
+      'id, user_id, brand, model, vehicle_type, scale, motor, esc, battery, notes, image_url, like_count, created_at'
+    )
     .order('created_at', { ascending: false })
     .limit(40);
+
+  if (searchParams.tur) {
+    query = query.eq('vehicle_type', searchParams.tur);
+  }
+
+  const { data, error } = await query;
 
   const cars: GarageCar[] = await attachUsernames(supabase, data ?? []);
 
   return (
     <div className="px-4 py-5">
       <h1 className="mb-1 text-lg font-bold">📸 Galeri</h1>
-      <p className="mb-5 text-sm text-muted">
+      <p className="mb-3 text-sm text-muted">
         Topluluğun paylaştığı araçlar. Beğendiklerine kalp at, kendi aracını{' '}
         <Link href="/profil" className="text-accent2">
           profilinden
         </Link>{' '}
         ekle.
       </p>
+
+      <div className="-mx-4 mb-2">
+        <VehicleTypeChips basePath="/vitrin" />
+      </div>
 
       {error && (
         <p className="py-6 text-center text-sm text-red-400">

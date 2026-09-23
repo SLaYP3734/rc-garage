@@ -1,5 +1,26 @@
 export type ProblemStatus = 'open' | 'discussing' | 'solved';
 
+// Aracın tipi: Araba, Drone, Uçak, Helikopter vb. — parça kategorisinden
+// (Motor, ESC...) ayrı bir boyut, sorun/ilan/garaj araçlarının hepsinde ortak.
+export const VEHICLE_TYPES = [
+  { value: 'araba', label: 'Araba', icon: '🚗' },
+  { value: 'drone', label: 'Drone', icon: '🛸' },
+  { value: 'ucak', label: 'Uçak', icon: '✈️' },
+  { value: 'helikopter', label: 'Helikopter', icon: '🚁' },
+  { value: 'tekne', label: 'Tekne', icon: '🚤' },
+  { value: 'diger', label: 'Diğer', icon: '🔧' }
+] as const;
+
+export type VehicleType = (typeof VEHICLE_TYPES)[number]['value'];
+
+export function vehicleTypeIcon(value: string | null | undefined): string {
+  return VEHICLE_TYPES.find((v) => v.value === value)?.icon || '🚗';
+}
+
+export function vehicleTypeLabel(value: string | null | undefined): string {
+  return VEHICLE_TYPES.find((v) => v.value === value)?.label || 'Araba';
+}
+
 export type Problem = {
   id: string;
   user_id: string;
@@ -7,6 +28,7 @@ export type Problem = {
   brand: string | null;
   model: string | null;
   category: string | null;
+  vehicle_type?: string | null;
   description: string;
   image_url: string | null;
   status: ProblemStatus;
@@ -61,6 +83,7 @@ export type Listing = {
   brand: string | null;
   model: string | null;
   category: string | null;
+  vehicle_type?: string | null;
   condition: ListingCondition;
   price: number | null;
   description: string;
@@ -91,6 +114,7 @@ export type GarageCar = {
   user_id: string;
   brand: string;
   model: string;
+  vehicle_type?: string | null;
   scale: string | null;
   motor: string | null;
   esc: string | null;

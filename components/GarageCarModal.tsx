@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import ImageUpload from '@/components/ImageUpload';
+import { VEHICLE_TYPES, VehicleType } from '@/lib/types';
 
 export default function GarageCarModal({
   userId,
@@ -15,6 +16,7 @@ export default function GarageCarModal({
 }) {
   const supabase = createClient();
 
+  const [vehicleType, setVehicleType] = useState<VehicleType>('araba');
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
   const [scale, setScale] = useState('');
@@ -36,6 +38,7 @@ export default function GarageCarModal({
 
     const { error } = await supabase.from('garage_cars').insert({
       user_id: userId,
+      vehicle_type: vehicleType,
       brand: brand.trim(),
       model: model.trim(),
       scale: scale.trim(),
@@ -76,6 +79,23 @@ export default function GarageCarModal({
         <p className="mb-5 text-sm text-muted">RC aracının bilgilerini garajına kaydet.</p>
 
         <div className="space-y-2.5">
+          <div className="grid grid-cols-3 gap-2">
+            {VEHICLE_TYPES.map((v) => (
+              <button
+                key={v.value}
+                type="button"
+                onClick={() => setVehicleType(v.value)}
+                className={`flex h-[50px] flex-col items-center justify-center gap-0.5 rounded-xl border text-[10.5px] font-semibold ${
+                  vehicleType === v.value
+                    ? 'border-accent bg-accent/15 text-accent2'
+                    : 'border-border bg-cardAlt text-muted'
+                }`}
+              >
+                <span className="text-[15px] leading-none">{v.icon}</span>
+                {v.label}
+              </button>
+            ))}
+          </div>
           <Field placeholder="Marka (Traxxas, Arrma...)" value={brand} onChange={setBrand} />
           <Field placeholder="Model (Maxx, Kraton...)" value={model} onChange={setModel} />
           <Field placeholder="Ölçek (1/10, 1/8...)" value={scale} onChange={setScale} />

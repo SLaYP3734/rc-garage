@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { brandColor } from '@/lib/brand';
 import { brandSlug } from '@/lib/slug';
-import { GarageCar } from '@/lib/types';
+import { GarageCar, vehicleTypeIcon } from '@/lib/types';
 
 export default function GarageCarCard({
   car,
@@ -70,6 +70,7 @@ export default function GarageCarCard({
 
       <div className="p-4">
         <div className="mb-2 flex items-center gap-2">
+          <span className="text-[13px]">{vehicleTypeIcon(car.vehicle_type)}</span>
           <span
             className="h-2.5 w-2.5 shrink-0 rounded-full"
             style={{ backgroundColor: brandColor(car.brand) }}
