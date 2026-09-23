@@ -5,9 +5,11 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { brandColor } from '@/lib/brand';
 import { timeAgo } from '@/lib/time';
-import { CONDITION_LABEL, LISTING_CATEGORIES, badgeForSolvedCount } from '@/lib/types';
+import { CONDITION_LABEL, LISTING_CATEGORIES, badgeForSolvedCount, sellerRank } from '@/lib/types';
 import MarkSoldButton from '@/components/MarkSoldButton';
 import Avatar from '@/components/Avatar';
+import StarRating from '@/components/StarRating';
+import RateSellerForm from '@/components/RateSellerForm';
 
 function formatPrice(price: number | null) {
   if (price === null || price === undefined) return 'Fiyat belirtilmemiş';
@@ -71,16 +73,25 @@ export default async function ListingPage({ params }: { params: { slug: string }
   const sellerAvatarUrl = (listing as any).profiles?.avatar_url as string | null;
 
   let sellerInfo: { createdAt: string; solvedCount: number; listingCount: number } | null = null;
+  let sellerRatingStats: { avg_rating: number; rating_count: number } | null = null;
+  let soldCount = 0;
   if (sellerUsername) {
-    const [{ data: sellerProfile }, { count: solvedCount }, { count: listingCount }] = await Promise.all([
-      supabase.from('profiles').select('created_at').eq('id', listing.user_id).maybeSingle(),
-      supabase
-        .from('answers')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', listing.user_id)
-        .eq('is_accepted', true),
-      supabase.from('listings').select('id', { count: 'exact', head: true }).eq('user_id', listing.user_id)
-    ]);
+    const [{ data: sellerProfile }, { count: solvedCount }, { count: listingCount }, { data: ratingStats }, { count: sold }] =
+      await Promise.all([
+        supabase.from('profiles').select('created_at').eq('id', listing.user_id).maybeSingle(),
+        supabase
+          .from('answers')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', listing.user_id)
+          .eq('is_accepted', true),
+        supabase.from('listings').select('id', { count: 'exact', head: true }).eq('user_id', listing.user_id),
+        supabase.from('seller_rating_stats').select('avg_rating, rating_count').eq('seller_id', listing.user_id).maybeSingle(),
+        supabase
+          .from('listings')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', listing.user_id)
+          .eq('status', 'sold')
+      ]);
 
     if (sellerProfile) {
       sellerInfo = {
@@ -89,9 +100,12 @@ export default async function ListingPage({ params }: { params: { slug: string }
         listingCount: listingCount ?? 0
       };
     }
+    sellerRatingStats = ratingStats ?? { avg_rating: 0, rating_count: 0 };
+    soldCount = sold ?? 0;
   }
 
   const sellerBadge = sellerInfo ? badgeForSolvedCount(sellerInfo.solvedCount) : null;
+  const rank = sellerRank(soldCount, sellerRatingStats?.avg_rating ?? 0);
 
   return (
     <article className="px-4 py-5">
@@ -161,6 +175,15 @@ export default async function ListingPage({ params }: { params: { slug: string }
                 </span>
               )}
             </span>
+            <span className="flex items-center gap-1.5 text-[11px] text-mutedDim">
+              {rank.icon} {rank.label}
+              {sellerRatingStats && sellerRatingStats.rating_count > 0 && (
+                <>
+                  <StarRating value={sellerRatingStats.avg_rating} size={10} />
+                  <span>({sellerRatingStats.rating_count})</span>
+                </>
+              )}
+            </span>
             <span className="block text-[11px] text-mutedDim">
               Üye olalı {timeAgo(sellerInfo.createdAt)} · {sellerInfo.listingCount} ilan
             </span>
@@ -185,6 +208,10 @@ export default async function ListingPage({ params }: { params: { slug: string }
         <div className="mt-5">
           <MarkSoldButton listingId={listing.id} />
         </div>
+      )}
+
+      {listing.status === 'sold' && user && !isOwner && (
+        <RateSellerForm listingId={listing.id} sellerId={listing.user_id} />
       )}
 
       {!user && (

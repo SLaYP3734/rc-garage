@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { timeAgo } from '@/lib/time';
 import { playNotificationSound } from '@/lib/notificationSound';
+import { isOnline, presenceLabel } from '@/lib/presence';
 import AuthModal from '@/components/AuthModal';
 
 type Msg = {
@@ -26,6 +27,7 @@ export default function ConversationPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [meId, setMeId] = useState<string | null>(null);
   const [otherUsername, setOtherUsername] = useState('');
+  const [otherLastSeen, setOtherLastSeen] = useState<string | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
@@ -54,16 +56,25 @@ export default function ConversationPage() {
 
       const { data: otherProfile } = await supabase
         .from('profiles')
-        .select('username')
+        .select('username, last_seen_at')
         .eq('id', otherId)
         .single();
 
-      if (!cancelled) setOtherUsername(otherProfile?.username || 'RC Atölyesi üyesi');
+      if (!cancelled) {
+        setOtherUsername(otherProfile?.username || 'RC Atölyesi üyesi');
+        setOtherLastSeen(otherProfile?.last_seen_at ?? null);
+      }
     }
 
     init();
+    const presenceInterval = setInterval(async () => {
+      const { data } = await supabase.from('profiles').select('last_seen_at').eq('id', otherId).maybeSingle();
+      if (!cancelled) setOtherLastSeen(data?.last_seen_at ?? null);
+    }, 20000);
+
     return () => {
       cancelled = true;
+      clearInterval(presenceInterval);
     };
   }, [supabase, otherId]);
 
@@ -164,7 +175,13 @@ export default function ConversationPage() {
         <button onClick={() => router.push('/mesajlar')} className="text-lg text-muted">
           ←
         </button>
-        <strong className="text-[15px]">{otherUsername}</strong>
+        <div>
+          <strong className="block text-[15px]">{otherUsername}</strong>
+          <span className="flex items-center gap-1 text-[11px] text-mutedDim">
+            {isOnline(otherLastSeen) && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
+            {presenceLabel(otherLastSeen)}
+          </span>
+        </div>
       </div>
 
       <div className="flex-1 space-y-2 overflow-y-auto px-4 py-4">

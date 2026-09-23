@@ -5,6 +5,7 @@ import { GarageCar } from '@/lib/types';
 import { attachUsernames } from '@/lib/attachUsernames';
 import GarageCarCard from '@/components/GarageCarCard';
 import VehicleTypeChips from '@/components/VehicleTypeChips';
+import NewItemsBanner from '@/components/NewItemsBanner';
 
 export const revalidate = 60;
 
@@ -50,6 +51,8 @@ export default async function VitrinPage({
       <div className="-mx-4 mb-2">
         <VehicleTypeChips basePath="/vitrin" />
       </div>
+
+      <NewItemsBanner table="garage_cars" />
 
       {error && (
         <p className="py-6 text-center text-sm text-red-400">

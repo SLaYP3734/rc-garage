@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { playNotificationSound } from '@/lib/notificationSound';
+import { HomeIcon, WrenchIcon, ChatIcon, CartIcon, UserIcon } from '@/components/NavIcons';
 
 const items = [
-  { href: '/', label: 'Akış', icon: '⌂' },
-  { href: '/sorun/yeni', label: 'Sorun Sor', icon: '＋', primary: true },
-  { href: '/mesajlar', label: 'Mesajlar', icon: '💬' },
-  { href: '/al-sat', label: 'Al / Sat', icon: '🛒' },
-  { href: '/profil', label: 'Profil', icon: '👤' }
+  { href: '/', label: 'Akış', Icon: HomeIcon },
+  { href: '/sorun/yeni', label: 'Arıza', Icon: WrenchIcon, primary: true },
+  { href: '/mesajlar', label: 'Mesajlar', Icon: ChatIcon },
+  { href: '/al-sat', label: 'Al / Sat', Icon: CartIcon },
+  { href: '/profil', label: 'Profil', Icon: UserIcon }
 ];
 
 export default function BottomNav() {
@@ -64,6 +65,8 @@ export default function BottomNav() {
       {items.map((item) => {
         const active = pathname === item.href;
 
+        const Icon = item.Icon;
+
         if (item.primary) {
           return (
             <Link
@@ -71,8 +74,8 @@ export default function BottomNav() {
               href={item.href}
               className="flex flex-col items-center justify-center gap-1"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-2xl text-black">
-                {item.icon}
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-black shadow-lg shadow-accent/30">
+                <Icon className="h-6 w-6" />
               </span>
             </Link>
           );
@@ -82,11 +85,11 @@ export default function BottomNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`relative flex flex-col items-center justify-center gap-1 text-xl ${
+            className={`relative flex flex-col items-center justify-center gap-1 ${
               active ? 'text-white' : 'text-muted'
             }`}
           >
-            {item.icon}
+            <Icon active={active} className="h-6 w-6" />
             {item.href === '/mesajlar' && unread > 0 && (
               <span className="absolute right-[26%] top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[9px] font-bold text-black">
                 {unread}

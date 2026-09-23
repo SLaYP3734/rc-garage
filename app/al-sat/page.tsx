@@ -6,6 +6,7 @@ import ListingCard from '@/components/ListingCard';
 import ListingSearchBox from '@/components/ListingSearchBox';
 import ListingCategoryChips from '@/components/ListingCategoryChips';
 import VehicleTypeChips from '@/components/VehicleTypeChips';
+import NewItemsBanner from '@/components/NewItemsBanner';
 
 export const revalidate = 60;
 
@@ -63,6 +64,8 @@ export default async function AlSatPage({
           + Yeni İlan
         </Link>
       </div>
+
+      <NewItemsBanner table="listings" />
 
       {error && (
         <p className="px-4 py-6 text-sm text-red-400">

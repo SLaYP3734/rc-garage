@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { timeAgo } from '@/lib/time';
 import { playNotificationSound } from '@/lib/notificationSound';
+import { isOnline } from '@/lib/presence';
 import AuthModal from '@/components/AuthModal';
 
 type ConversationRow = {
@@ -13,6 +14,7 @@ type ConversationRow = {
   lastBody: string;
   lastAt: string;
   unread: number;
+  lastSeenAt: string | null;
 };
 
 export default function MessagesInboxPage() {
@@ -44,7 +46,7 @@ export default function MessagesInboxPage() {
       const { data, error } = await supabase
         .from('messages')
         .select(
-          'id, sender_id, receiver_id, body, created_at, read_at, sender:profiles!messages_sender_id_fkey(username), receiver:profiles!messages_receiver_id_fkey(username)'
+          'id, sender_id, receiver_id, body, created_at, read_at, sender:profiles!messages_sender_id_fkey(username, last_seen_at), receiver:profiles!messages_receiver_id_fkey(username, last_seen_at)'
         )
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
@@ -60,7 +62,8 @@ export default function MessagesInboxPage() {
       (data || []).forEach((m: any) => {
         const isMine = m.sender_id === user.id;
         const otherId = isMine ? m.receiver_id : m.sender_id;
-        const otherUsername = (isMine ? m.receiver?.username : m.sender?.username) || 'RC Atölyesi üyesi';
+        const otherProfile = isMine ? m.receiver : m.sender;
+        const otherUsername = otherProfile?.username || 'RC Atölyesi üyesi';
 
         if (!map.has(otherId)) {
           map.set(otherId, {
@@ -68,7 +71,8 @@ export default function MessagesInboxPage() {
             username: otherUsername,
             lastBody: m.body,
             lastAt: m.created_at,
-            unread: 0
+            unread: 0,
+            lastSeenAt: otherProfile?.last_seen_at ?? null
           });
         }
 
@@ -125,6 +129,7 @@ export default function MessagesInboxPage() {
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
+                {isOnline(c.lastSeenAt) && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />}
                 <span className="font-semibold text-zinc-100">{c.username}</span>
                 {c.unread > 0 && (
                   <span className="rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-black">

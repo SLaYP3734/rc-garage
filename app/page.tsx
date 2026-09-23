@@ -7,7 +7,9 @@ import CategoryChips from '@/components/CategoryChips';
 import VehicleTypeChips from '@/components/VehicleTypeChips';
 import HomeHero from '@/components/HomeHero';
 import TopHelpers from '@/components/TopHelpers';
+import TopSellers from '@/components/TopSellers';
 import FeaturedCar from '@/components/FeaturedCar';
+import NewItemsBanner from '@/components/NewItemsBanner';
 import { attachUsernames } from '@/lib/attachUsernames';
 
 export const revalidate = 60;
@@ -36,7 +38,7 @@ export default async function HomePage({
 }) {
   const supabase = createClient();
 
-  const [stats, { data: topHelpers }, { data: featuredCars }] = await Promise.all([
+  const [stats, { data: topHelpers }, { data: featuredCars }, { data: topSellersRaw }] = await Promise.all([
     getStats(supabase),
     supabase.from('top_helpers').select('*').limit(8),
     supabase
@@ -45,11 +47,13 @@ export default async function HomePage({
       .not('image_url', 'is', null)
       .order('like_count', { ascending: false })
       .order('created_at', { ascending: false })
-      .limit(1)
+      .limit(1),
+    supabase.from('top_sellers').select('*').limit(8)
   ]);
 
   const featuredCarWithUsername = await attachUsernames(supabase, featuredCars ?? []);
   const featuredCar = featuredCarWithUsername[0] ?? null;
+  const topSellers = await attachUsernames(supabase, topSellersRaw ?? []);
 
   let query = supabase
     .from('problems')
@@ -86,6 +90,7 @@ export default async function HomePage({
 
       {featuredCar && <FeaturedCar car={featuredCar} />}
       <TopHelpers helpers={topHelpers ?? []} />
+      <TopSellers sellers={topSellers.map((s: any) => ({ ...s, username: s.author_username }))} />
 
       <SearchBox />
       <VehicleTypeChips basePath="/" />
@@ -97,6 +102,8 @@ export default async function HomePage({
           + Yeni Sorun
         </Link>
       </div>
+
+      <NewItemsBanner table="problems" />
 
       {error && (
         <p className="px-4 py-6 text-sm text-red-400">

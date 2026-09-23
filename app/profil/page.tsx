@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import GarageCarModal from '@/components/GarageCarModal';
 import GarageCarCard from '@/components/GarageCarCard';
 import AuthModal from '@/components/AuthModal';
 import AvatarUpload from '@/components/AvatarUpload';
+
+const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
 
 export default function ProfilPage() {
   const supabase = createClient();
@@ -116,6 +119,15 @@ export default function ProfilPage() {
       >
         Çıkış Yap
       </button>
+
+      {ADMIN_USER_ID && userId === ADMIN_USER_ID && (
+        <Link
+          href="/admin"
+          className="mt-2.5 block w-full rounded-xl border border-accent/30 bg-accent/10 py-3 text-center text-sm font-bold text-accent2"
+        >
+          🛡️ Yönetici Paneli
+        </Link>
+      )}
 
       <div className="mt-8">
         <div className="mb-3.5 flex items-center justify-between">

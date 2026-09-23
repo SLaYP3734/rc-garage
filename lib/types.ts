@@ -132,6 +132,35 @@ export type TopHelper = {
   solved_count: number;
 };
 
+export type SellerRating = {
+  id: string;
+  listing_id: string;
+  seller_id: string;
+  rater_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  rater_username?: string | null;
+};
+
+export type TopSeller = {
+  user_id: string;
+  sold_count: number;
+  avg_rating: number;
+  rating_count: number;
+  username?: string | null;
+};
+
+// Satılan ilan sayısı + ortalama puana göre otomatik satıcı rütbesi.
+export function sellerRank(soldCount: number, avgRating: number | null): { label: string; icon: string } {
+  const r = avgRating ?? 0;
+  if (soldCount >= 50 && r >= 4.8) return { label: 'Elmas Satıcı', icon: '💎' };
+  if (soldCount >= 25 && r >= 4.5) return { label: 'Altın Satıcı', icon: '🥇' };
+  if (soldCount >= 10 && r >= 4.0) return { label: 'Gümüş Satıcı', icon: '🥈' };
+  if (soldCount >= 3) return { label: 'Bronz Satıcı', icon: '🥉' };
+  return { label: 'Yeni Satıcı', icon: '🆕' };
+}
+
 // Çözülen soru sayısına göre bir kullanıcıya verilecek rozet.
 export function badgeForSolvedCount(count: number): { label: string; icon: string } | null {
   if (count >= 15) return { label: 'Usta', icon: '🏆' };
