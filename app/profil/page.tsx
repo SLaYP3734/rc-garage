@@ -160,7 +160,6 @@ export default function ProfilPage() {
 
         {cars.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border bg-card p-9 text-center">
-            <div className="mb-2.5 text-5xl">🏎️</div>
             <h3 className="font-bold">Garajın henüz boş</h3>
             <p className="mx-auto mb-5 mt-2 max-w-[280px] text-sm text-muted">
               RC araçlarını ekleyerek kendi garajını oluştur.

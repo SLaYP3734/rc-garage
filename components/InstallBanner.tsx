@@ -6,7 +6,7 @@ import { pushSupported, isStandalone, requestAndSubscribe, VAPID_PUBLIC_KEY } fr
 import ModalPortal from '@/components/ModalPortal';
 
 const DISMISS_KEY = 'rc-install-banner-dismissed-at';
-const DISMISS_DAYS = 7;
+const DISMISS_DAYS = 1;
 
 function isDismissedRecently() {
   try {

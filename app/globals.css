@@ -8,6 +8,14 @@ body {
   color: #f5f5f5;
 }
 
+/* Geniş ekranlarda (bilgisayar) ortadaki sitenin sağında/solunda kalan
+   boşluk düz siyah yerine hafif bir degrade ile daha "kasıtlı" görünsün. */
+@media (min-width: 768px) {
+  body {
+    background: radial-gradient(ellipse at top, #17171b 0%, #09090b 55%);
+  }
+}
+
 body {
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
 }

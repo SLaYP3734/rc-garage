@@ -57,13 +57,19 @@ export default async function HomePage({
   const featuredCar = featuredCarWithUsername[0] ?? null;
   const topSellers = await attachUsernames(supabase, topSellersRaw ?? []);
 
+  // "RC Atölyesi Ekibi" hesabı başlangıç içeriğini paylaşmak için
+  // oluşturulmuştu — gerçek üyelerin sıralamasında görünmesin.
+  const realTopHelpers = (topHelpers ?? []).filter(
+    (h: any) => !(h.username || '').toLowerCase().includes('atölyesi ekibi')
+  );
+
   let query = supabase
     .from('problems')
     .select(
       'id, user_id, title, brand, model, category, vehicle_type, description, image_url, status, slug, answer_count, created_at, profiles(username)'
     )
     .order('created_at', { ascending: false })
-    .limit(30);
+    .limit(10);
 
   if (searchParams.kategori) {
     query = query.eq('category', searchParams.kategori);
@@ -90,7 +96,6 @@ export default async function HomePage({
     <div>
       <HomeHero />
 
-      <TopHelpers helpers={topHelpers ?? []} />
       <TopSellers sellers={topSellers.map((s: any) => ({ ...s, username: s.author_username }))} />
 
       <SearchBox />
@@ -99,8 +104,11 @@ export default async function HomePage({
 
       <div className="flex items-center justify-between px-4 pb-2 pt-1">
         <h2 className="text-[15px] font-bold text-zinc-300">Son Sorular</h2>
-        <Link href="/sorun/yeni" className="text-[13px] font-semibold text-accent2">
-          + Yeni Sorun
+        <Link
+          href="/sorun/yeni"
+          className="rounded-lg bg-accent/10 px-3 py-1.5 text-[13px] font-bold text-accent2"
+        >
+          + Yeni Konu Aç
         </Link>
       </div>
 
@@ -134,6 +142,7 @@ export default async function HomePage({
         ))}
       </div>
 
+      <TopHelpers helpers={realTopHelpers} />
       <HomeStats stats={stats} />
       {featuredCar && <FeaturedCar car={featuredCar} />}
       <ContactButton />
