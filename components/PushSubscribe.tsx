@@ -26,14 +26,8 @@ type Status = 'idle' | 'loading' | 'granted' | 'denied' | 'unsupported';
 // olan hesap için kaydeder. push_subscriptions tablosunda "endpoint" tekil
 // olduğu için, bu her çağrıldığında o telefonun/tarayıcının bildirim
 // sahipliği otomatik olarak o anki hesaba geçer.
-async function syncSubscription(
-  supabase: ReturnType<typeof createClient>,
-  setDebug: (s: string) => void
-) {
-  if (!VAPID_PUBLIC_KEY) {
-    setDebug('vapid public key yok');
-    return false;
-  }
+async function syncSubscription(supabase: ReturnType<typeof createClient>) {
+  if (!VAPID_PUBLIC_KEY) return false;
 
   const reg = await navigator.serviceWorker.ready;
   const existing = await reg.pushManager.getSubscription();
@@ -48,32 +42,20 @@ async function syncSubscription(
     data: { user }
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    setDebug('giriş yapılmamış görünüyor (auth.getUser boş)');
-    return false;
-  }
+  if (!user) return false;
 
-  const endpointTail = sub.endpoint.slice(-12);
+  const res = await fetch('/api/push/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(sub)
+  });
 
-  try {
-    const res = await fetch('/api/push/subscribe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(sub)
-    });
-    const text = await res.text();
-    setDebug(`user:${user.id.slice(0, 8)} endpoint:...${endpointTail} → ${res.status} ${text}`);
-    return res.ok;
-  } catch (err: any) {
-    setDebug(`fetch hatası: ${err?.message || err}`);
-    return false;
-  }
+  return res.ok;
 }
 
 export default function PushSubscribe() {
   const supabase = createClient();
   const [status, setStatus] = useState<Status>('idle');
-  const [debug, setDebug] = useState('');
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -91,7 +73,7 @@ export default function PushSubscribe() {
       // İzin telefonda zaten açık (belki başka bir hesapla açılmıştı).
       // Bu profili şu an kim görüyorsa, aboneliği sessizce ona bağla.
       setStatus('granted');
-      syncSubscription(supabase, setDebug).catch((err) => setDebug(`sync hatası: ${err?.message || err}`));
+      syncSubscription(supabase).catch((err) => console.error(err));
     }
   }, [supabase]);
 
@@ -106,10 +88,10 @@ export default function PushSubscribe() {
         return;
       }
 
-      const ok = await syncSubscription(supabase, setDebug);
+      const ok = await syncSubscription(supabase);
       setStatus(ok ? 'granted' : 'idle');
-    } catch (err: any) {
-      setDebug(`enable hatası: ${err?.message || err}`);
+    } catch (err) {
+      console.error(err);
       setStatus('idle');
     }
   }
@@ -117,22 +99,18 @@ export default function PushSubscribe() {
   if (status === 'unsupported' || !VAPID_PUBLIC_KEY) return null;
 
   return (
-    <div className="mb-2.5">
-      <button
-        onClick={enable}
-        disabled={status === 'loading' || status === 'granted'}
-        className="w-full rounded-xl border border-border bg-cardAlt py-3 text-sm font-bold text-zinc-300 disabled:opacity-60"
-      >
-        {status === 'granted'
-          ? '🔔 Bildirimler Açık'
-          : status === 'denied'
-          ? '🔕 Bildirimler Engelli (Telefon Ayarlarından Aç)'
-          : status === 'loading'
-          ? 'Açılıyor...'
-          : '🔔 Bildirimleri Aç'}
-      </button>
-      {/* GEÇİCİ debug satırı — sorunu bulduktan sonra kaldırılacak */}
-      {debug && <p className="mt-1.5 break-all text-[10px] text-muted">{debug}</p>}
-    </div>
+    <button
+      onClick={enable}
+      disabled={status === 'loading' || status === 'granted'}
+      className="mb-2.5 w-full rounded-xl border border-border bg-cardAlt py-3 text-sm font-bold text-zinc-300 disabled:opacity-60"
+    >
+      {status === 'granted'
+        ? '🔔 Bildirimler Açık'
+        : status === 'denied'
+        ? '🔕 Bildirimler Engelli (Telefon Ayarlarından Aç)'
+        : status === 'loading'
+        ? 'Açılıyor...'
+        : '🔔 Bildirimleri Aç'}
+    </button>
   );
 }
