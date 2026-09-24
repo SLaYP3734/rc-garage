@@ -207,7 +207,13 @@ export default async function ListingPage({ params }: { params: { slug: string }
       </p>
 
       {isOwner && listing.status !== 'sold' && (
-        <div className="mt-5">
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          <Link
+            href={`/ilan/${listing.slug}/duzenle`}
+            className="rounded-lg border border-border bg-cardAlt px-2.5 py-1 text-[11px] font-semibold text-zinc-300 hover:bg-zinc-700/40"
+          >
+            ✏️ Düzenle
+          </Link>
           <MarkSoldButton listingId={listing.id} />
         </div>
       )}
