@@ -9,10 +9,21 @@ body {
 }
 
 /* Geniş ekranlarda (bilgisayar) ortadaki sitenin sağında/solunda kalan
-   boşluk düz siyah yerine hafif bir degrade ile daha "kasıtlı" görünsün. */
+   boşluk düz siyah yerine hafif bir degrade ile daha "kasıtlı" görünsün,
+   ayrıca genel yazı/boşluk ölçeği hafifçe büyüsün (mobil tasarım aynı
+   kalır, sadece bilgisayarda "minik" hissi azalsın). */
 @media (min-width: 768px) {
   body {
     background: radial-gradient(ellipse at top, #17171b 0%, #09090b 55%);
+  }
+  html {
+    font-size: 17.5px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 19px;
   }
 }
 

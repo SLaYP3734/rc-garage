@@ -49,7 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PresenceHeartbeat />
         <BanGate />
         <PwaRegister />
-        <div className="mx-auto flex min-h-screen w-full max-w-app flex-col bg-surface pb-24 md:max-w-[760px] md:border-x md:border-border md:shadow-2xl">
+        <div className="mx-auto flex min-h-screen w-full max-w-app flex-col bg-surface pb-24 md:max-w-[880px] md:border-x md:border-border md:shadow-2xl lg:max-w-[1040px]">
           <Header />
           <MarqueeBanner />
           <InstallBanner />

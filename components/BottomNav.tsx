@@ -61,7 +61,7 @@ export default function BottomNav() {
   }, [supabase, pathname]);
 
   return (
-    <nav className="fixed bottom-0 left-1/2 z-10 grid h-[72px] w-full max-w-app -translate-x-1/2 grid-cols-5 border-t border-border bg-[#121214fa] md:max-w-[760px]">
+    <nav className="fixed bottom-0 left-1/2 z-10 grid h-[72px] w-full max-w-app -translate-x-1/2 grid-cols-5 border-t border-border bg-[#121214fa] md:max-w-[880px] lg:max-w-[1040px]">
       {items.map((item) => {
         const active = pathname === item.href;
 
