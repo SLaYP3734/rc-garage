@@ -22,6 +22,7 @@ export default function NewListingPage() {
   const [vehicleType, setVehicleType] = useState<VehicleType>('araba');
   const [condition, setCondition] = useState<ListingCondition>('kullanilmis');
   const [price, setPrice] = useState('');
+  const [minOfferAmount, setMinOfferAmount] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [message, setMessage] = useState('');
@@ -56,6 +57,7 @@ export default function NewListingPage() {
 
     const slug = buildListingSlug(brand.trim(), model.trim(), title.trim());
     const parsedPrice = price.trim() ? Number(price.trim().replace(',', '.')) : null;
+    const parsedMinOffer = minOfferAmount.trim() ? Number(minOfferAmount.trim().replace(',', '.')) : null;
 
     const { data, error } = await supabase
       .from('listings')
@@ -68,6 +70,7 @@ export default function NewListingPage() {
         vehicle_type: vehicleType,
         condition,
         price: parsedPrice,
+        min_offer_amount: parsedMinOffer,
         description: description.trim(),
         image_url: imageUrl.trim() || null,
         slug,
@@ -146,6 +149,20 @@ export default function NewListingPage() {
             onChange={(e) => setPrice(e.target.value)}
             className="h-[48px] w-full rounded-xl border border-border bg-cardAlt px-3.5 text-sm outline-none focus:border-accent"
           />
+        </div>
+
+        <div>
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder="Minimum teklif tutarı (TL) — isteğe bağlı"
+            value={minOfferAmount}
+            onChange={(e) => setMinOfferAmount(e.target.value)}
+            className="h-[48px] w-full rounded-xl border border-border bg-cardAlt px-3.5 text-sm outline-none focus:border-accent"
+          />
+          <p className="mt-1 px-1 text-[11px] text-mutedDim">
+            Belirlersen alıcılar bu tutarın altında teklif veremez. Boş bırakırsan sınır olmaz.
+          </p>
         </div>
 
         <Input

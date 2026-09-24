@@ -10,6 +10,8 @@ import MarkSoldButton from '@/components/MarkSoldButton';
 import Avatar from '@/components/Avatar';
 import StarRating from '@/components/StarRating';
 import RateSellerForm from '@/components/RateSellerForm';
+import ListingOffers from '@/components/ListingOffers';
+import ListingQA from '@/components/ListingQA';
 
 function formatPrice(price: number | null) {
   if (price === null || price === undefined) return 'Fiyat belirtilmemiş';
@@ -22,7 +24,7 @@ async function getListing(slug: string) {
   const { data: listing } = await supabase
     .from('listings')
     .select(
-      'id, user_id, title, brand, model, category, condition, price, description, image_url, status, slug, created_at, profiles(username, avatar_url)'
+      'id, user_id, title, brand, model, category, condition, price, description, image_url, status, slug, created_at, min_offer_amount, profiles(username, avatar_url)'
     )
     .eq('slug', slug)
     .single();
@@ -219,6 +221,16 @@ export default async function ListingPage({ params }: { params: { slug: string }
           Satıcıya mesaj göndermek için giriş yapmalısın.
         </p>
       )}
+
+      {listing.status !== 'sold' && (
+        <ListingOffers
+          listingId={listing.id}
+          ownerId={listing.user_id}
+          minOfferAmount={(listing as any).min_offer_amount ?? null}
+        />
+      )}
+
+      <ListingQA listingId={listing.id} ownerId={listing.user_id} />
     </article>
   );
 }
