@@ -22,6 +22,13 @@ type UserRow = {
   created_at: string;
 };
 
+type EmailRow = {
+  id: string;
+  email: string | null;
+  username: string | null;
+  created_at: string;
+};
+
 const CONTENT_TABS: { key: 'problems' | 'listings' | 'garage_cars'; label: string; icon: string }[] = [
   { key: 'problems', label: 'Sorular', icon: '🔧' },
   { key: 'listings', label: 'İlanlar', icon: '🛒' },
@@ -37,12 +44,16 @@ export default function AdminPage() {
   const supabase = createClient();
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [tab, setTab] = useState<'problems' | 'listings' | 'garage_cars' | 'users'>('problems');
+  const [tab, setTab] = useState<'problems' | 'listings' | 'garage_cars' | 'users' | 'emails'>('problems');
   const [rows, setRows] = useState<Row[]>([]);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [userSearch, setUserSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [onlineCount, setOnlineCount] = useState<number | null>(null);
+  const [emails, setEmails] = useState<EmailRow[]>([]);
+  const [emailsError, setEmailsError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -54,8 +65,55 @@ export default function AdminPage() {
   useEffect(() => {
     if (!isAdmin) return;
     if (tab === 'users') loadUsers();
+    else if (tab === 'emails') loadEmails();
     else loadContent();
   }, [isAdmin, tab]);
+
+  // Şu an sitede kaç kişi olduğunu (üye/ziyaretçi ayrımı olmadan) her
+  // 15 saniyede bir tazele — son 2 dakika içinde "nabız" atan farklı
+  // oturum sayısı.
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    async function loadOnlineCount() {
+      const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from('live_visitors')
+        .select('session_id', { count: 'exact', head: true })
+        .gte('last_seen_at', twoMinAgo);
+      setOnlineCount(count ?? 0);
+    }
+
+    loadOnlineCount();
+    const interval = setInterval(loadOnlineCount, 15000);
+    return () => clearInterval(interval);
+  }, [isAdmin, supabase]);
+
+  async function loadEmails() {
+    setLoading(true);
+    setEmailsError('');
+    try {
+      const res = await fetch('/api/admin/users');
+      const data = await res.json();
+      if (!res.ok) {
+        setEmailsError(data?.error || 'E-postalar yüklenemedi.');
+        setEmails([]);
+      } else {
+        setEmails(data.users ?? []);
+      }
+    } catch (err: any) {
+      setEmailsError(err?.message || 'E-postalar yüklenemedi.');
+    }
+    setLoading(false);
+  }
+
+  function copyAllEmails() {
+    const list = emails.map((e) => e.email).filter(Boolean).join(', ');
+    navigator.clipboard.writeText(list).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
   async function loadContent() {
     setLoading(true);
@@ -144,7 +202,13 @@ export default function AdminPage() {
 
   return (
     <div className="px-4 py-5">
-      <h1 className="mb-1 text-lg font-bold">🛡️ Yönetici Paneli</h1>
+      <div className="mb-3 flex items-center justify-between">
+        <h1 className="text-lg font-bold">🛡️ Yönetici Paneli</h1>
+        <div className="flex items-center gap-1.5 rounded-full border border-border bg-cardAlt px-3 py-1.5 text-[12px] font-bold text-zinc-200">
+          <span className="h-2 w-2 rounded-full bg-emerald-400" />
+          Şu an sitede: {onlineCount === null ? '...' : onlineCount}
+        </div>
+      </div>
       <p className="mb-4 text-sm text-muted">Kural dışı içerikleri sil, gerekirse kullanıcı erişimini kapat.</p>
 
       <div className="mb-4 flex flex-wrap gap-2">
@@ -167,11 +231,52 @@ export default function AdminPage() {
         >
           👥 Kullanıcılar
         </button>
+        <button
+          onClick={() => setTab('emails')}
+          className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${
+            tab === 'emails' ? 'border-accent bg-accent/15 text-accent2' : 'border-border text-muted'
+          }`}
+        >
+          📧 E-postalar
+        </button>
       </div>
 
       {loading && <p className="text-sm text-muted">Yükleniyor...</p>}
 
-      {tab === 'users' ? (
+      {tab === 'emails' ? (
+        <>
+          {emailsError && <p className="mb-3 text-sm text-red-400">{emailsError}</p>}
+
+          {!loading && emails.length > 0 && (
+            <button
+              onClick={copyAllEmails}
+              className="mb-3 w-full rounded-xl border border-border bg-cardAlt py-2.5 text-sm font-bold text-zinc-300"
+            >
+              {copied ? '✓ Kopyalandı' : `📋 Tüm E-postaları Kopyala (${emails.length})`}
+            </button>
+          )}
+
+          {!loading && emails.length === 0 && !emailsError && (
+            <p className="text-sm text-muted">Kayıtlı üye yok.</p>
+          )}
+
+          <div className="space-y-2">
+            {emails.map((e) => (
+              <div
+                key={e.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3.5 py-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-semibold text-zinc-100">
+                    {e.username || 'İsimsiz kullanıcı'}
+                  </p>
+                  <p className="truncate text-[12px] text-mutedDim">{e.email || '—'}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : tab === 'users' ? (
         <>
           <div className="mb-3 flex gap-2">
             <input

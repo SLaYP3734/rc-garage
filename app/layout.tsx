@@ -8,6 +8,7 @@ import PresenceHeartbeat from '@/components/PresenceHeartbeat';
 import BanGate from '@/components/BanGate';
 import PwaRegister from '@/components/PwaRegister';
 import InstallBanner from '@/components/InstallBanner';
+import VisitorHeartbeat from '@/components/VisitorHeartbeat';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rc-garage-three.vercel.app';
 
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SoundUnlocker />
         <PresenceHeartbeat />
+        <VisitorHeartbeat />
         <BanGate />
         <PwaRegister />
         <div className="mx-auto flex min-h-screen w-full max-w-app flex-col bg-surface pb-24 md:max-w-[880px] md:border-x md:border-border md:shadow-2xl lg:max-w-[1040px]">
