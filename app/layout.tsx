@@ -15,7 +15,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rc-garage-three.ver
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'RC Atölyesi — RC araç sorunlarına çözüm',
+    default: 'RC Atölyesi — Uzaktan Kumandalı Severlerin Platformu',
     template: '%s | RC Atölyesi'
   },
   description:
