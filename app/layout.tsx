@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Header from '@/components/Header';
 import MarqueeBanner from '@/components/MarqueeBanner';
@@ -6,6 +6,7 @@ import BottomNav from '@/components/BottomNav';
 import SoundUnlocker from '@/components/SoundUnlocker';
 import PresenceHeartbeat from '@/components/PresenceHeartbeat';
 import BanGate from '@/components/BanGate';
+import PwaRegister from '@/components/PwaRegister';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rc-garage-three.vercel.app';
 
@@ -24,7 +25,19 @@ export const metadata: Metadata = {
   },
   verification: {
     google: 'JJ6XdAjqZQ4HY3WrB5BlC0x0eDqWMVq_mCTA_90H40I'
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'RC Atölyesi'
   }
+};
+
+export const viewport: Viewport = {
+  themeColor: '#09090b',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -34,6 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SoundUnlocker />
         <PresenceHeartbeat />
         <BanGate />
+        <PwaRegister />
         <div className="mx-auto flex min-h-screen w-full max-w-app flex-col bg-surface pb-24">
           <Header />
           <MarqueeBanner />
