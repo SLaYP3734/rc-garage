@@ -7,6 +7,7 @@ import SoundUnlocker from '@/components/SoundUnlocker';
 import PresenceHeartbeat from '@/components/PresenceHeartbeat';
 import BanGate from '@/components/BanGate';
 import PwaRegister from '@/components/PwaRegister';
+import InstallBanner from '@/components/InstallBanner';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rc-garage-three.vercel.app';
 
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="mx-auto flex min-h-screen w-full max-w-app flex-col bg-surface pb-24">
           <Header />
           <MarqueeBanner />
+          <InstallBanner />
           <main className="flex-1">{children}</main>
           <BottomNav />
         </div>
