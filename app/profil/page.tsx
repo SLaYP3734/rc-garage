@@ -8,6 +8,7 @@ import GarageCarModal from '@/components/GarageCarModal';
 import GarageCarCard from '@/components/GarageCarCard';
 import AuthModal from '@/components/AuthModal';
 import AvatarUpload from '@/components/AvatarUpload';
+import PushSubscribe from '@/components/PushSubscribe';
 
 const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
 
@@ -120,6 +121,8 @@ export default function ProfilPage() {
         <Stat value={followerCount} label="Takipçi" />
         <Stat value={followingCount} label="Takip" />
       </div>
+
+      <PushSubscribe />
 
       <Link
         href="/uyeler"
