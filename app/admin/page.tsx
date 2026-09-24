@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { timeAgo } from '@/lib/time';
 
 const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
 
@@ -29,6 +30,12 @@ type EmailRow = {
   created_at: string;
 };
 
+type ActiveUserRow = {
+  id: string;
+  username: string | null;
+  last_seen_at: string;
+};
+
 const CONTENT_TABS: { key: 'problems' | 'listings' | 'garage_cars'; label: string; icon: string }[] = [
   { key: 'problems', label: 'Sorular', icon: '🔧' },
   { key: 'listings', label: 'İlanlar', icon: '🛒' },
@@ -44,7 +51,9 @@ export default function AdminPage() {
   const supabase = createClient();
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [tab, setTab] = useState<'problems' | 'listings' | 'garage_cars' | 'users' | 'emails'>('problems');
+  const [tab, setTab] = useState<'problems' | 'listings' | 'garage_cars' | 'users' | 'emails' | 'active'>(
+    'problems'
+  );
   const [rows, setRows] = useState<Row[]>([]);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [userSearch, setUserSearch] = useState('');
@@ -54,6 +63,7 @@ export default function AdminPage() {
   const [emails, setEmails] = useState<EmailRow[]>([]);
   const [emailsError, setEmailsError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [activeUsers, setActiveUsers] = useState<ActiveUserRow[]>([]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -66,8 +76,26 @@ export default function AdminPage() {
     if (!isAdmin) return;
     if (tab === 'users') loadUsers();
     else if (tab === 'emails') loadEmails();
+    else if (tab === 'active') loadActiveUsers();
     else loadContent();
   }, [isAdmin, tab]);
+
+  // "Aktif Üyeler" sekmesindeyken listeyi de her 15 saniyede bir tazele.
+  useEffect(() => {
+    if (!isAdmin || tab !== 'active') return;
+    const interval = setInterval(loadActiveUsers, 15000);
+    return () => clearInterval(interval);
+  }, [isAdmin, tab]);
+
+  async function loadActiveUsers() {
+    const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, username, last_seen_at')
+      .gte('last_seen_at', twoMinAgo)
+      .order('last_seen_at', { ascending: false });
+    setActiveUsers((data ?? []) as ActiveUserRow[]);
+  }
 
   // Şu an sitede kaç kişi olduğunu (üye/ziyaretçi ayrımı olmadan) her
   // 15 saniyede bir tazele — son 2 dakika içinde "nabız" atan farklı
@@ -239,11 +267,44 @@ export default function AdminPage() {
         >
           📧 E-postalar
         </button>
+        <button
+          onClick={() => setTab('active')}
+          className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${
+            tab === 'active' ? 'border-accent bg-accent/15 text-accent2' : 'border-border text-muted'
+          }`}
+        >
+          🟢 Aktif Üyeler
+        </button>
       </div>
 
       {loading && <p className="text-sm text-muted">Yükleniyor...</p>}
 
-      {tab === 'emails' ? (
+      {tab === 'active' ? (
+        <>
+          <p className="mb-3 text-sm text-muted">
+            Son 2 dakika içinde sitede "nabız" atan kayıtlı üyeler (sayfa açıkken otomatik günceller).
+          </p>
+
+          {activeUsers.length === 0 && <p className="text-sm text-muted">Şu an aktif üye yok.</p>}
+
+          <div className="space-y-2">
+            {activeUsers.map((u) => (
+              <div
+                key={u.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3.5 py-3"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" />
+                  <p className="truncate text-[13px] font-semibold text-zinc-100">
+                    {u.username || 'İsimsiz kullanıcı'}
+                  </p>
+                </div>
+                <span className="shrink-0 text-[11px] text-mutedDim">{timeAgo(u.last_seen_at)}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : tab === 'emails' ? (
         <>
           {emailsError && <p className="mb-3 text-sm text-red-400">{emailsError}</p>}
 
