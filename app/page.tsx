@@ -195,12 +195,17 @@ export default async function HomePage({
 
       <div className="flex items-center justify-between px-4 pb-2 pt-1">
         <h2 className="text-[15px] font-bold text-zinc-300">Son Sorular</h2>
-        <Link
-          href="/sorun/yeni"
-          className="rounded-lg bg-accent/10 px-3 py-1.5 text-[13px] font-bold text-accent2"
-        >
-          + Yeni Konu Aç
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/sorular" className="text-[12px] font-semibold text-accent2">
+            Tümünü Gör
+          </Link>
+          <Link
+            href="/sorun/yeni"
+            className="rounded-lg bg-accent/10 px-3 py-1.5 text-[13px] font-bold text-accent2"
+          >
+            + Yeni Konu Aç
+          </Link>
+        </div>
       </div>
 
       <NewItemsBanner table="problems" />
