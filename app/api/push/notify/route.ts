@@ -55,6 +55,10 @@ export async function POST(req: Request) {
   });
 
   let sent = 0;
+  // Hangi aboneliğin neden başarısız olduğunu görebilmek için (Supabase'in
+  // net._http_response tablosunda bu cevap zaten kayıtlı oluyor, ayrıca bir
+  // log sistemi kurmaya gerek yok — sorun çıkarsa oradan okuyabiliriz).
+  const failed: { id: string; statusCode: number | null; message: string }[] = [];
 
   await Promise.all(
     subs.map(async (sub) => {
@@ -65,6 +69,12 @@ export async function POST(req: Request) {
         );
         sent++;
       } catch (err: any) {
+        failed.push({
+          id: sub.id,
+          statusCode: err?.statusCode ?? null,
+          message: (err?.body || err?.message || 'bilinmeyen hata').toString().slice(0, 200)
+        });
+
         // Abonelik artık geçersizse (kullanıcı bildirimi kapattı, tarayıcı
         // verisini sildi vb.) kaydı veritabanından temizliyoruz.
         if (err?.statusCode === 404 || err?.statusCode === 410) {
@@ -74,5 +84,5 @@ export async function POST(req: Request) {
     })
   );
 
-  return NextResponse.json({ ok: true, sent });
+  return NextResponse.json({ ok: true, sent, total: subs.length, failed });
 }
