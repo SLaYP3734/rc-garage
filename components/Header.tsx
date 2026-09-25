@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import AuthTrigger from './AuthTrigger';
 import Avatar from './Avatar';
+import BackButton from './BackButton';
 
 export default async function Header() {
   const supabase = createClient();
@@ -22,12 +23,15 @@ export default async function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-10 flex h-[62px] items-center justify-between border-b border-border bg-surface/95 px-[17px] backdrop-blur">
-      <Link href="/">
-        <strong className="text-xl font-extrabold tracking-[1.5px]">
-          <i className="not-italic text-accent">RC</i> ATÖLYESİ
-        </strong>
-      </Link>
+    <header className="sticky top-0 z-10 flex h-[62px] items-center justify-between gap-2.5 border-b border-border bg-surface/95 px-[17px] backdrop-blur">
+      <div className="flex min-w-0 items-center gap-2.5">
+        <BackButton />
+        <Link href="/" className="min-w-0 truncate">
+          <strong className="text-xl font-extrabold tracking-[1.5px]">
+            <i className="not-italic text-accent">RC</i> ATÖLYESİ
+          </strong>
+        </Link>
+      </div>
 
       {user ? (
         <Link href="/profil">

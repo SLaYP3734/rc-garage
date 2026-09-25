@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { LISTING_CATEGORIES, ListingCondition, VEHICLE_TYPES, VehicleType } from '@/lib/types';
+import { getCurrentUser } from '@/lib/authUser';
 import ImageUpload from '@/components/ImageUpload';
 
 // Var olan bir ilanı düzenleme sayfası. Sadece ilanın sahibi girebilir
@@ -36,9 +37,7 @@ export default function EditListingPage() {
     let cancelled = false;
 
     async function init() {
-      const {
-        data: { user }
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser(supabase);
 
       const { data: listing } = await supabase
         .from('listings')

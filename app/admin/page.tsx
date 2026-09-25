@@ -36,6 +36,8 @@ type ActiveUserRow = {
   last_seen_at: string;
 };
 
+type VisitorStats = { today: number; week: number; month: number };
+
 const CONTENT_TABS: { key: 'problems' | 'listings' | 'garage_cars'; label: string; icon: string }[] = [
   { key: 'problems', label: 'Sorular', icon: '🔧' },
   { key: 'listings', label: 'İlanlar', icon: '🛒' },
@@ -51,9 +53,9 @@ export default function AdminPage() {
   const supabase = createClient();
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [tab, setTab] = useState<'problems' | 'listings' | 'garage_cars' | 'users' | 'emails' | 'active'>(
-    'problems'
-  );
+  const [tab, setTab] = useState<
+    'problems' | 'listings' | 'garage_cars' | 'users' | 'emails' | 'active' | 'stats' | 'broadcast'
+  >('problems');
   const [rows, setRows] = useState<Row[]>([]);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [userSearch, setUserSearch] = useState('');
@@ -64,6 +66,10 @@ export default function AdminPage() {
   const [emailsError, setEmailsError] = useState('');
   const [copied, setCopied] = useState(false);
   const [activeUsers, setActiveUsers] = useState<ActiveUserRow[]>([]);
+  const [visitorStats, setVisitorStats] = useState<VisitorStats | null>(null);
+  const [broadcastText, setBroadcastText] = useState('');
+  const [broadcasting, setBroadcasting] = useState(false);
+  const [broadcastMessage, setBroadcastMessage] = useState('');
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -77,8 +83,68 @@ export default function AdminPage() {
     if (tab === 'users') loadUsers();
     else if (tab === 'emails') loadEmails();
     else if (tab === 'active') loadActiveUsers();
-    else loadContent();
+    else if (tab === 'stats') loadVisitorStats();
+    else if (tab === 'broadcast') {
+      /* form yeterli, ekstra veri yüklemeye gerek yok */
+    } else loadContent();
   }, [isAdmin, tab]);
+
+  async function loadVisitorStats() {
+    setLoading(true);
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const weekAgoStr = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const monthAgoStr = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    const [{ data: todayRows }, { data: weekRows }, { data: monthRows }] = await Promise.all([
+      supabase.from('visitor_days').select('session_id').eq('day', todayStr),
+      supabase.from('visitor_days').select('session_id').gte('day', weekAgoStr),
+      supabase.from('visitor_days').select('session_id').gte('day', monthAgoStr)
+    ]);
+
+    setVisitorStats({
+      today: new Set((todayRows ?? []).map((r: any) => r.session_id)).size,
+      week: new Set((weekRows ?? []).map((r: any) => r.session_id)).size,
+      month: new Set((monthRows ?? []).map((r: any) => r.session_id)).size
+    });
+    setLoading(false);
+  }
+
+  async function sendBroadcast() {
+    if (!broadcastText.trim()) return;
+    if (!confirm('Bu mesaj TÜM kayıtlı kullanıcılara gönderilecek. Onaylıyor musun?')) return;
+
+    setBroadcasting(true);
+    setBroadcastMessage('Gönderiliyor...');
+
+    const { data: allProfiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id')
+      .neq('id', ADMIN_USER_ID);
+
+    if (profilesError || !allProfiles) {
+      setBroadcasting(false);
+      setBroadcastMessage('Kullanıcı listesi alınamadı: ' + (profilesError?.message ?? ''));
+      return;
+    }
+
+    const rows = allProfiles.map((p) => ({
+      sender_id: ADMIN_USER_ID,
+      receiver_id: p.id,
+      body: broadcastText.trim()
+    }));
+
+    const { error } = await supabase.from('messages').insert(rows);
+
+    setBroadcasting(false);
+
+    if (error) {
+      setBroadcastMessage('Gönderilemedi: ' + error.message);
+      return;
+    }
+
+    setBroadcastMessage(`✓ ${rows.length} kullanıcıya gönderildi.`);
+    setBroadcastText('');
+  }
 
   // "Aktif Üyeler" sekmesindeyken listeyi de her 15 saniyede bir tazele.
   useEffect(() => {
@@ -275,11 +341,71 @@ export default function AdminPage() {
         >
           🟢 Aktif Üyeler
         </button>
+        <button
+          onClick={() => setTab('stats')}
+          className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${
+            tab === 'stats' ? 'border-accent bg-accent/15 text-accent2' : 'border-border text-muted'
+          }`}
+        >
+          📊 İstatistik
+        </button>
+        <button
+          onClick={() => setTab('broadcast')}
+          className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${
+            tab === 'broadcast' ? 'border-accent bg-accent/15 text-accent2' : 'border-border text-muted'
+          }`}
+        >
+          📣 Toplu Mesaj
+        </button>
       </div>
 
       {loading && <p className="text-sm text-muted">Yükleniyor...</p>}
 
-      {tab === 'active' ? (
+      {tab === 'stats' ? (
+        <>
+          <p className="mb-3 text-sm text-muted">Farklı kişi sayısı (aynı kişi birden fazla gün gelse tekrar sayılmaz).</p>
+          {!visitorStats ? (
+            <p className="text-sm text-muted">Yükleniyor...</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-2xl border border-border bg-card p-4 text-center">
+                <strong className="block text-2xl">{visitorStats.today}</strong>
+                <span className="text-[11px] text-muted">Bugün</span>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-4 text-center">
+                <strong className="block text-2xl">{visitorStats.week}</strong>
+                <span className="text-[11px] text-muted">Son 7 Gün</span>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-4 text-center">
+                <strong className="block text-2xl">{visitorStats.month}</strong>
+                <span className="text-[11px] text-muted">Son 30 Gün</span>
+              </div>
+            </div>
+          )}
+        </>
+      ) : tab === 'broadcast' ? (
+        <>
+          <p className="mb-3 text-sm text-muted">
+            Buraya yazdığın mesaj TÜM kayıtlı kullanıcıların "Mesajlar" kutusuna admin hesabından düşer (bildirimi
+            açık olanlara push bildirimi de gider).
+          </p>
+          <textarea
+            value={broadcastText}
+            onChange={(e) => setBroadcastText(e.target.value)}
+            rows={5}
+            placeholder="Duyurunu yaz..."
+            className="w-full resize-y rounded-xl border border-border bg-cardAlt px-3.5 py-3 text-sm outline-none focus:border-accent"
+          />
+          <button
+            onClick={sendBroadcast}
+            disabled={broadcasting || !broadcastText.trim()}
+            className="mt-3 h-[46px] w-full rounded-xl bg-accent text-sm font-extrabold text-black disabled:opacity-60"
+          >
+            {broadcasting ? 'Gönderiliyor...' : '📣 Tüm Kullanıcılara Gönder'}
+          </button>
+          {broadcastMessage && <p className="mt-2 text-center text-[13px] text-accent2">{broadcastMessage}</p>}
+        </>
+      ) : tab === 'active' ? (
         <>
           <p className="mb-3 text-sm text-muted">
             Son 2 dakika içinde sitede "nabız" atan kayıtlı üyeler (sayfa açıkken otomatik günceller).

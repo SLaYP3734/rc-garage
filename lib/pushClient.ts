@@ -38,12 +38,29 @@ export async function syncPushSubscription(supabase: ReturnType<typeof createCli
 
   const reg = await navigator.serviceWorker.ready;
   const existing = await reg.pushManager.getSubscription();
-  const sub =
-    existing ||
-    (await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-    }));
+
+  let sub;
+  try {
+    sub =
+      existing ||
+      (await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      }));
+  } catch {
+    // Bazı Android cihazlarda tarayıcının push kaydı arka planda
+    // bozulabiliyor (izin açık ama abonelik geçersiz). Bunu bir kere
+    // sıfırlayıp yeniden denemek genelde düzeltiyor.
+    try {
+      if (existing) await existing.unsubscribe();
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    } catch {
+      return false;
+    }
+  }
 
   const {
     data: { user }

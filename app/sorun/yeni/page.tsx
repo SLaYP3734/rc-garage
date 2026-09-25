@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { buildProblemSlug } from '@/lib/slug';
 import { CATEGORIES, VEHICLE_TYPES, VehicleType } from '@/lib/types';
+import { getCurrentUser } from '@/lib/authUser';
 import AuthModal from '@/components/AuthModal';
 import ImageUpload from '@/components/ImageUpload';
 
@@ -26,7 +27,7 @@ export default function NewProblemPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getCurrentUser(supabase).then((user) => {
       setCheckingAuth(false);
       if (!user) setAuthOpen(true);
     });
@@ -35,9 +36,7 @@ export default function NewProblemPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser(supabase);
 
     if (!user) {
       setAuthOpen(true);

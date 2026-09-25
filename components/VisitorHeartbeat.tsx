@@ -46,7 +46,23 @@ export default function VisitorHeartbeat() {
       }
     }
 
+    // Admin panelindeki gün/hafta/ay istatistiği için: bu oturumun bugün
+    // sitede olduğunu (bir kere) kaydet. Aynı gün için tekrar tekrar
+    // yazmasın diye localStorage'a bugünün tarihini not ediyoruz.
+    async function logDailyVisit() {
+      const today = new Date().toISOString().slice(0, 10);
+      try {
+        if (window.localStorage.getItem('rc-visitor-day-logged') === today) return;
+        await supabase.from('visitor_days').upsert({ day: today, session_id: sessionId });
+        window.localStorage.setItem('rc-visitor-day-logged', today);
+      } catch {
+        // localStorage kapalıysa sorun değil, sadece istatistik biraz
+        // eksik sayılabilir — siteye erişimi engellemiyor.
+      }
+    }
+
     beat();
+    logDailyVisit();
     const interval = setInterval(beat, HEARTBEAT_MS);
 
     function onVisible() {

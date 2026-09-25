@@ -9,6 +9,7 @@ import { CATEGORIES } from '@/lib/types';
 import StatusBadge from '@/components/StatusBadge';
 import AnswerForm from '@/components/AnswerForm';
 import AcceptAnswerButton from '@/components/AcceptAnswerButton';
+import AnswerLikeButton from '@/components/AnswerLikeButton';
 
 async function getProblem(slug: string) {
   const supabase = createClient();
@@ -64,7 +65,7 @@ export default async function ProblemPage({ params }: { params: { slug: string }
 
   const { data: answers } = await supabase
     .from('answers')
-    .select('id, problem_id, user_id, body, is_accepted, created_at, profiles(username)')
+    .select('id, problem_id, user_id, body, is_accepted, created_at, like_count, profiles(username)')
     .eq('problem_id', problem.id)
     .order('is_accepted', { ascending: false })
     .order('created_at', { ascending: true });
@@ -177,6 +178,9 @@ export default async function ProblemPage({ params }: { params: { slug: string }
             <p className="whitespace-pre-wrap text-[13.5px] leading-relaxed text-zinc-200">
               {answer.body}
             </p>
+            <div className="mt-2">
+              <AnswerLikeButton answerId={answer.id} initialCount={answer.like_count ?? 0} />
+            </div>
           </div>
         ))}
       </div>

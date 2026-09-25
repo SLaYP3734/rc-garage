@@ -7,7 +7,9 @@ import { createClient } from '@/lib/supabase/client';
 import { timeAgo } from '@/lib/time';
 import { playNotificationSound } from '@/lib/notificationSound';
 import { isOnline, presenceLabel } from '@/lib/presence';
+import { getCurrentUser } from '@/lib/authUser';
 import AuthModal from '@/components/AuthModal';
+import Avatar from '@/components/Avatar';
 
 type Msg = {
   id: string;
@@ -28,6 +30,7 @@ export default function ConversationPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [meId, setMeId] = useState<string | null>(null);
   const [otherUsername, setOtherUsername] = useState('');
+  const [otherAvatarUrl, setOtherAvatarUrl] = useState<string | null>(null);
   const [otherLastSeen, setOtherLastSeen] = useState<string | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [draft, setDraft] = useState('');
@@ -39,9 +42,7 @@ export default function ConversationPage() {
     let cancelled = false;
 
     async function init() {
-      const {
-        data: { user }
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser(supabase);
 
       if (!user) {
         if (!cancelled) {
@@ -57,12 +58,13 @@ export default function ConversationPage() {
 
       const { data: otherProfile } = await supabase
         .from('profiles')
-        .select('username, last_seen_at')
+        .select('username, avatar_url, last_seen_at')
         .eq('id', otherId)
         .single();
 
       if (!cancelled) {
         setOtherUsername(otherProfile?.username || 'RC Atölyesi üyesi');
+        setOtherAvatarUrl(otherProfile?.avatar_url ?? null);
         setOtherLastSeen(otherProfile?.last_seen_at ?? null);
       }
     }
@@ -176,11 +178,14 @@ export default function ConversationPage() {
         <button onClick={() => router.push('/mesajlar')} className="text-lg text-muted">
           ←
         </button>
-        <Link href={`/satici/${otherUsername}`} className="min-w-0">
-          <strong className="block truncate text-[15px] hover:text-accent2">{otherUsername}</strong>
-          <span className="flex items-center gap-1 text-[11px] text-mutedDim">
-            {isOnline(otherLastSeen) && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
-            {presenceLabel(otherLastSeen)}
+        <Link href={`/satici/${otherUsername}`} className="flex min-w-0 items-center gap-2.5">
+          <Avatar url={otherAvatarUrl} name={otherUsername} size={34} />
+          <span className="min-w-0">
+            <strong className="block truncate text-[15px] hover:text-accent2">{otherUsername}</strong>
+            <span className="flex items-center gap-1 text-[11px] text-mutedDim">
+              {isOnline(otherLastSeen) && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
+              {presenceLabel(otherLastSeen)}
+            </span>
           </span>
         </Link>
       </div>

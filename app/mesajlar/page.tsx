@@ -6,11 +6,14 @@ import { createClient } from '@/lib/supabase/client';
 import { timeAgo } from '@/lib/time';
 import { playNotificationSound } from '@/lib/notificationSound';
 import { isOnline } from '@/lib/presence';
+import { getCurrentUser } from '@/lib/authUser';
 import AuthModal from '@/components/AuthModal';
+import Avatar from '@/components/Avatar';
 
 type ConversationRow = {
   otherId: string;
   username: string;
+  avatarUrl: string | null;
   lastBody: string;
   lastAt: string;
   unread: number;
@@ -29,9 +32,7 @@ export default function MessagesInboxPage() {
     let cancelled = false;
 
     async function load() {
-      const {
-        data: { user }
-      } = await supabase.auth.getUser();
+      const user = await getCurrentUser(supabase);
 
       if (!user) {
         if (!cancelled) {
@@ -46,7 +47,7 @@ export default function MessagesInboxPage() {
       const { data, error } = await supabase
         .from('messages')
         .select(
-          'id, sender_id, receiver_id, body, created_at, read_at, sender:profiles!messages_sender_id_fkey(username, last_seen_at), receiver:profiles!messages_receiver_id_fkey(username, last_seen_at)'
+          'id, sender_id, receiver_id, body, created_at, read_at, sender:profiles!messages_sender_id_fkey(username, avatar_url, last_seen_at), receiver:profiles!messages_receiver_id_fkey(username, avatar_url, last_seen_at)'
         )
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
@@ -69,6 +70,7 @@ export default function MessagesInboxPage() {
           map.set(otherId, {
             otherId,
             username: otherUsername,
+            avatarUrl: otherProfile?.avatar_url ?? null,
             lastBody: m.body,
             lastAt: m.created_at,
             unread: 0,
@@ -127,6 +129,7 @@ export default function MessagesInboxPage() {
             href={`/mesajlar/${c.otherId}`}
             className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3.5 py-3"
           >
+            <Avatar url={c.avatarUrl} name={c.username} size={40} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 {isOnline(c.lastSeenAt) && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />}

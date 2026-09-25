@@ -28,6 +28,7 @@ export default function AuthModal({
   const router = useRouter();
 
   const [registerMode, setRegisterMode] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -42,7 +43,34 @@ export default function AuthModal({
 
   const captchaRequired = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
+  async function handleForgotSubmit() {
+    if (!email) {
+      setMessage('E-posta adresini gir.');
+      return;
+    }
+
+    setLoading(true);
+    setMessage('Gönderiliyor...');
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/sifre-sifirla`
+      });
+      if (error) throw error;
+      setMessage('E-postana bir şifre sıfırlama linki gönderdik. Gelen kutunu (ve spam klasörünü) kontrol et.');
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Bir hata oluştu.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleSubmit() {
+    if (forgotMode) {
+      await handleForgotSubmit();
+      return;
+    }
+
     if (!email || !password) {
       setMessage('E-posta ve şifre alanlarını doldur.');
       return;
@@ -140,9 +168,15 @@ export default function AuthModal({
           </strong>
         </div>
 
-        <h2 className="text-2xl font-bold">{registerMode ? 'Kayıt Ol' : 'Giriş Yap'}</h2>
+        <h2 className="text-2xl font-bold">
+          {forgotMode ? 'Şifremi Unuttum' : registerMode ? 'Kayıt Ol' : 'Giriş Yap'}
+        </h2>
         <p className="mb-6 mt-2 text-sm text-muted">
-          {registerMode ? 'RC Atölyesi ailesine katıl.' : "RC Atölyesi'ne hoş geldin."}
+          {forgotMode
+            ? 'E-postana bir şifre sıfırlama linki gönderelim.'
+            : registerMode
+            ? 'RC Atölyesi ailesine katıl.'
+            : "RC Atölyesi'ne hoş geldin."}
         </p>
 
         <input
@@ -152,15 +186,18 @@ export default function AuthModal({
           onChange={(e) => setEmail(e.target.value)}
           className="mb-3 h-[50px] w-full rounded-xl border border-border bg-cardAlt px-4 text-[15px] outline-none focus:border-accent"
         />
-        <input
-          type="password"
-          placeholder="Şifren"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mb-3 h-[50px] w-full rounded-xl border border-border bg-cardAlt px-4 text-[15px] outline-none focus:border-accent"
-        />
 
-        {registerMode && (
+        {!forgotMode && (
+          <input
+            type="password"
+            placeholder="Şifren"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="mb-3 h-[50px] w-full rounded-xl border border-border bg-cardAlt px-4 text-[15px] outline-none focus:border-accent"
+          />
+        )}
+
+        {registerMode && !forgotMode && (
           <>
             <input
               type="text"
@@ -191,10 +228,22 @@ export default function AuthModal({
           </>
         )}
 
-        {captchaRequired && (
+        {!forgotMode && captchaRequired && (
           <div className="mb-3">
             <Turnstile onToken={setCaptchaToken} resetKey={captchaResetKey} />
           </div>
+        )}
+
+        {!registerMode && !forgotMode && (
+          <button
+            onClick={() => {
+              setForgotMode(true);
+              setMessage('');
+            }}
+            className="mb-3 block w-full text-right text-[12.5px] text-muted hover:text-accent"
+          >
+            Şifremi unuttum
+          </button>
         )}
 
         <button
@@ -202,20 +251,32 @@ export default function AuthModal({
           disabled={loading}
           className="mt-1 h-[51px] w-full rounded-xl bg-accent text-base font-extrabold shadow-lg shadow-accent/20 transition hover:bg-accent2 disabled:opacity-60"
         >
-          {registerMode ? 'Kayıt Ol' : 'Giriş Yap'}
+          {forgotMode ? 'Sıfırlama Linki Gönder' : registerMode ? 'Kayıt Ol' : 'Giriş Yap'}
         </button>
 
         <p className="my-3 min-h-[20px] text-[13px] text-accent2">{message}</p>
 
-        <button
-          onClick={() => {
-            setRegisterMode(!registerMode);
-            setMessage('');
-          }}
-          className="mt-2 p-2 text-sm text-muted hover:text-accent"
-        >
-          {registerMode ? 'Zaten hesabın var mı? Giriş Yap' : 'Hesabın yok mu? Kayıt Ol'}
-        </button>
+        {forgotMode ? (
+          <button
+            onClick={() => {
+              setForgotMode(false);
+              setMessage('');
+            }}
+            className="mt-2 p-2 text-sm text-muted hover:text-accent"
+          >
+            ← Giriş ekranına dön
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              setRegisterMode(!registerMode);
+              setMessage('');
+            }}
+            className="mt-2 p-2 text-sm text-muted hover:text-accent"
+          >
+            {registerMode ? 'Zaten hesabın var mı? Giriş Yap' : 'Hesabın yok mu? Kayıt Ol'}
+          </button>
+        )}
       </div>
     </div>
     </ModalPortal>

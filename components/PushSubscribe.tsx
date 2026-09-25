@@ -31,6 +31,23 @@ export default function PushSubscribe() {
       setStatus('granted');
       syncPushSubscription(supabase).catch((err) => console.error(err));
     }
+
+    // Bazı Android cihazlarda tarayıcı, bildirim aboneliğini arka planda
+    // kendiliğinden geçersiz kılabiliyor (izin açık görünse de bildirim
+    // gelmiyor). Uygulama her ön plana geldiğinde aboneliği sessizce
+    // tazeliyoruz ki bu durum kendini onarsın.
+    function onVisible() {
+      if (document.visibilityState === 'visible' && Notification.permission === 'granted') {
+        syncPushSubscription(supabase).catch((err) => console.error(err));
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
   }, [supabase]);
 
   async function enable() {

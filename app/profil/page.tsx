@@ -9,8 +9,13 @@ import GarageCarCard from '@/components/GarageCarCard';
 import AuthModal from '@/components/AuthModal';
 import AvatarUpload from '@/components/AvatarUpload';
 import PushSubscribe from '@/components/PushSubscribe';
+import ListingCard from '@/components/ListingCard';
+import { timeAgo } from '@/lib/time';
+import { getCurrentUser } from '@/lib/authUser';
 
 const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
+
+type MyProblem = { id: string; title: string; slug: string; status: string; created_at: string };
 
 export default function ProfilPage() {
   const supabase = createClient();
@@ -26,24 +31,47 @@ export default function ProfilPage() {
   const [followingCount, setFollowingCount] = useState(0);
   const [cars, setCars] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [myProblems, setMyProblems] = useState<MyProblem[]>([]);
+  const [myListings, setMyListings] = useState<any[]>([]);
 
   const loadData = useCallback(
     async (uid: string) => {
-      const [{ data: profile }, { data: garageCars }, { count }, { count: followers }, { count: followingC }] =
-        await Promise.all([
-          supabase.from('profiles').select('username, avatar_url').eq('id', uid).single(),
-          supabase
-            .from('garage_cars')
-            .select('*')
-            .eq('user_id', uid)
-            .order('created_at', { ascending: false }),
-          supabase
-            .from('problems')
-            .select('id', { count: 'exact', head: true })
-            .eq('user_id', uid),
-          supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('followed_id', uid),
-          supabase.from('follows').select('followed_id', { count: 'exact', head: true }).eq('follower_id', uid)
-        ]);
+      const [
+        { data: profile },
+        { data: garageCars },
+        { count },
+        { count: followers },
+        { count: followingC },
+        { data: problems },
+        { data: listings }
+      ] = await Promise.all([
+        supabase.from('profiles').select('username, avatar_url').eq('id', uid).single(),
+        supabase
+          .from('garage_cars')
+          .select('*')
+          .eq('user_id', uid)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('problems')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', uid),
+        supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('followed_id', uid),
+        supabase.from('follows').select('followed_id', { count: 'exact', head: true }).eq('follower_id', uid),
+        supabase
+          .from('problems')
+          .select('id, title, slug, status, created_at')
+          .eq('user_id', uid)
+          .order('created_at', { ascending: false })
+          .limit(30),
+        supabase
+          .from('listings')
+          .select(
+            'id, user_id, title, brand, model, category, vehicle_type, condition, price, description, image_url, status, slug, created_at'
+          )
+          .eq('user_id', uid)
+          .order('created_at', { ascending: false })
+          .limit(50)
+      ]);
 
       setUsername(profile?.username ?? '');
       setAvatarUrl(profile?.avatar_url ?? null);
@@ -51,9 +79,14 @@ export default function ProfilPage() {
       setProblemCount(count ?? 0);
       setFollowerCount(followers ?? 0);
       setFollowingCount(followingC ?? 0);
+      setMyProblems((problems ?? []) as MyProblem[]);
+      setMyListings(listings ?? []);
     },
     [supabase]
   );
+
+  const activeListings = myListings.filter((l) => l.status !== 'sold');
+  const soldListings = myListings.filter((l) => l.status === 'sold');
 
   async function handleAvatarChange(url: string) {
     setAvatarUrl(url);
@@ -63,7 +96,7 @@ export default function ProfilPage() {
   }
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
+    getCurrentUser(supabase).then(async (user) => {
       if (!user) {
         setLoading(false);
         setAuthOpen(true);
@@ -123,6 +156,13 @@ export default function ProfilPage() {
       </div>
 
       <PushSubscribe />
+
+      <Link
+        href="/profil/duzenle"
+        className="mb-2.5 block w-full rounded-xl border border-border bg-cardAlt py-3 text-center text-sm font-bold text-zinc-300"
+      >
+        ⚙️ Bilgilerimi Düzenle
+      </Link>
 
       <Link
         href="/uyeler"
@@ -190,6 +230,60 @@ export default function ProfilPage() {
           }}
         />
       )}
+
+      <div className="mt-8">
+        <h2 className="mb-3.5 text-lg font-bold">Sorularım</h2>
+        {myProblems.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-center text-sm text-muted">
+            Henüz bir soru sormadın.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {myProblems.map((p) => (
+              <Link
+                key={p.id}
+                href={`/sorun/${p.slug}`}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3.5 py-3"
+              >
+                <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-zinc-200">
+                  {p.title}
+                </span>
+                <span className="shrink-0 text-[11px] text-mutedDim">{timeAgo(p.created_at)}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-8">
+        <h2 className="mb-3.5 text-lg font-bold">İlanlarım — Devam Eden</h2>
+        {activeListings.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-center text-sm text-muted">
+            Devam eden bir ilanın yok.
+          </p>
+        ) : (
+          <div className="-mx-[18px]">
+            {activeListings.map((l) => (
+              <ListingCard key={l.id} listing={l} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-8">
+        <h2 className="mb-3.5 text-lg font-bold">İlanlarım — Satılanlar</h2>
+        {soldListings.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-center text-sm text-muted">
+            Henüz satılmış bir ilanın yok.
+          </p>
+        ) : (
+          <div className="-mx-[18px]">
+            {soldListings.map((l) => (
+              <ListingCard key={l.id} listing={l} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

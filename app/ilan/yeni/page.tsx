@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { buildListingSlug } from '@/lib/slug';
 import { LISTING_CATEGORIES, ListingCondition, VEHICLE_TYPES, VehicleType } from '@/lib/types';
+import { getCurrentUser } from '@/lib/authUser';
 import AuthModal from '@/components/AuthModal';
 import ImageUpload from '@/components/ImageUpload';
 
@@ -29,7 +30,7 @@ export default function NewListingPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    getCurrentUser(supabase).then((user) => {
       setCheckingAuth(false);
       if (!user) setAuthOpen(true);
     });
@@ -38,9 +39,7 @@ export default function NewListingPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser(supabase);
 
     if (!user) {
       setAuthOpen(true);
