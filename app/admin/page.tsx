@@ -317,17 +317,14 @@ export default function AdminPage() {
     }
 
     setBusyId(user.id);
-    const res = await fetch('/api/admin/users', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ targetId: user.id })
-    });
+    // Supabase'in kendi "kullanıcı sil" servisi bazı hesaplarda belirsiz bir
+    // hata verdiği için, silme işlemini doğrudan veritabanındaki
+    // admin_delete_user() fonksiyonu üzerinden yapıyoruz (bkz. schema-delete-user.sql).
+    const { error } = await supabase.rpc('admin_delete_user', { target_id: user.id });
     setBusyId(null);
 
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      const extra = [body.code, body.status, body.detail].filter(Boolean).join(' | ');
-      alert('Silinemedi: ' + (body.error || res.statusText) + (extra ? `\n\nDetay: ${extra}` : ''));
+    if (error) {
+      alert('Silinemedi: ' + error.message);
       return;
     }
 
