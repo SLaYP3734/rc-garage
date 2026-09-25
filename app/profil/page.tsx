@@ -34,8 +34,9 @@ export default function ProfilPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [myProblems, setMyProblems] = useState<MyProblem[]>([]);
   const [myListings, setMyListings] = useState<any[]>([]);
-  const [profileTab, setProfileTab] = useState<'garaj' | 'sorular' | 'ilanlar'>('garaj');
+  const [profileTab, setProfileTab] = useState<'garaj' | 'sorular' | 'ilanlar' | 'favoriler'>('garaj');
   const [solvedCount, setSolvedCount] = useState(0);
+  const [favoriteListings, setFavoriteListings] = useState<any[]>([]);
 
   const loadData = useCallback(
     async (uid: string) => {
@@ -47,7 +48,8 @@ export default function ProfilPage() {
         { count: followingC },
         { data: problems },
         { data: listings },
-        { count: solved }
+        { count: solved },
+        { data: favorites }
       ] = await Promise.all([
         supabase.from('profiles').select('username, avatar_url').eq('id', uid).single(),
         supabase
@@ -75,7 +77,14 @@ export default function ProfilPage() {
           .eq('user_id', uid)
           .order('created_at', { ascending: false })
           .limit(50),
-        supabase.from('answers').select('id', { count: 'exact', head: true }).eq('user_id', uid).eq('is_accepted', true)
+        supabase.from('answers').select('id', { count: 'exact', head: true }).eq('user_id', uid).eq('is_accepted', true),
+        supabase
+          .from('listing_favorites')
+          .select(
+            'created_at, listings(id, user_id, title, brand, model, category, vehicle_type, condition, price, description, image_url, status, slug, created_at)'
+          )
+          .eq('user_id', uid)
+          .order('created_at', { ascending: false })
       ]);
 
       setUsername(profile?.username ?? '');
@@ -87,6 +96,7 @@ export default function ProfilPage() {
       setMyProblems((problems ?? []) as MyProblem[]);
       setMyListings(listings ?? []);
       setSolvedCount(solved ?? 0);
+      setFavoriteListings(((favorites ?? []) as any[]).map((f) => f.listings).filter(Boolean));
     },
     [supabase]
   );
@@ -212,7 +222,8 @@ export default function ProfilPage() {
             [
               { key: 'garaj', label: `🏎️ Garajım (${cars.length})` },
               { key: 'sorular', label: `❓ Sorularım (${myProblems.length})` },
-              { key: 'ilanlar', label: `🛒 İlanlarım (${myListings.length})` }
+              { key: 'ilanlar', label: `🛒 İlanlarım (${myListings.length})` },
+              { key: 'favoriler', label: `★ Favorilerim (${favoriteListings.length})` }
             ] as const
           ).map((t) => (
             <button
@@ -312,6 +323,19 @@ export default function ProfilPage() {
             )}
           </>
         )}
+
+        {profileTab === 'favoriler' &&
+          (favoriteListings.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-center text-sm text-muted">
+              Henüz favorilediğin bir ilan yok. İlan sayfalarındaki ★ butonuyla ekleyebilirsin.
+            </p>
+          ) : (
+            <div className="-mx-[18px]">
+              {favoriteListings.map((l) => (
+                <ListingCard key={l.id} listing={l} />
+              ))}
+            </div>
+          ))}
       </div>
     </div>
   );

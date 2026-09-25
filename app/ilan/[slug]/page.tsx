@@ -7,6 +7,7 @@ import { brandColor } from '@/lib/brand';
 import { timeAgo } from '@/lib/time';
 import { CONDITION_LABEL, LISTING_CATEGORIES, badgeForSolvedCount, sellerRank } from '@/lib/types';
 import MarkSoldButton from '@/components/MarkSoldButton';
+import FavoriteButton from '@/components/FavoriteButton';
 import Avatar from '@/components/Avatar';
 import StarRating from '@/components/StarRating';
 import RateSellerForm from '@/components/RateSellerForm';
@@ -194,7 +195,10 @@ export default async function ListingPage({ params }: { params: { slug: string }
         </Link>
       )}
 
-      <p className="mt-3 text-2xl font-extrabold text-accent">{formatPrice(listing.price)}</p>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <p className="text-2xl font-extrabold text-accent">{formatPrice(listing.price)}</p>
+        {!isOwner && <FavoriteButton listingId={listing.id} />}
+      </div>
 
       {listing.image_url && (
         <div className="relative mt-4 h-[220px] w-full overflow-hidden rounded-2xl border border-border">
