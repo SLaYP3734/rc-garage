@@ -10,6 +10,7 @@ import AuthModal from '@/components/AuthModal';
 import AvatarUpload from '@/components/AvatarUpload';
 import PushSubscribe from '@/components/PushSubscribe';
 import ListingCard from '@/components/ListingCard';
+import ContactButton from '@/components/ContactButton';
 import { timeAgo } from '@/lib/time';
 import { getCurrentUser } from '@/lib/authUser';
 import { nextBadgeProgress } from '@/lib/types';
@@ -220,7 +221,7 @@ export default function ProfilPage() {
         <div className="mb-4 flex gap-2 border-b border-border">
           {(
             [
-              { key: 'garaj', label: `🏎️ Garajım (${cars.length})` },
+              { key: 'garaj', label: `🚗 Garajım (${cars.length})` },
               { key: 'sorular', label: `❓ Sorularım (${myProblems.length})` },
               { key: 'ilanlar', label: `🛒 İlanlarım (${myListings.length})` },
               { key: 'favoriler', label: `★ Favorilerim (${favoriteListings.length})` }
@@ -337,6 +338,8 @@ export default function ProfilPage() {
             </div>
           ))}
       </div>
+
+      <ContactButton buttonLabel="🆘 Yardıma mı ihtiyacın var?" modalTitle="🆘 Yardım İste" />
     </div>
   );
 }

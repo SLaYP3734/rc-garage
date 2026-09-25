@@ -77,7 +77,7 @@ export default function GarageCarModal({
           ×
         </button>
 
-        <h2 className="mb-1.5 text-xl font-bold">🏎️ Aracını Ekle</h2>
+        <h2 className="mb-1.5 text-xl font-bold">🚗 Aracını Ekle</h2>
         <p className="mb-5 text-sm text-muted">RC aracının bilgilerini garajına kaydet.</p>
 
         <div className="space-y-2.5">

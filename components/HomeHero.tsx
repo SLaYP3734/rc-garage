@@ -17,33 +17,31 @@ export default function HomeHero() {
         aria-hidden
       />
 
-      <div className="relative">
-        <div className="flex items-stretch gap-2">
-          <Link
-            href="/sorun/yeni"
-            className="flex flex-1 items-center justify-center rounded-xl bg-accent px-2 py-2.5 text-center text-[13px] font-extrabold leading-tight text-black"
-          >
-            🔧 Arıza Çözümleme
-          </Link>
-          <Link
-            href="/al-sat"
-            className="flex flex-1 items-center justify-center rounded-xl border border-border bg-cardAlt px-2 py-2.5 text-center text-[13px] font-bold leading-tight text-zinc-200"
-          >
-            🛒 Al / Sat
-          </Link>
-          <Link
-            href="/vitrin"
-            className="flex flex-1 items-center justify-center rounded-xl border border-border bg-cardAlt px-2 py-2.5 text-center text-[13px] font-bold leading-tight text-zinc-200"
-          >
-            📸 Galeri
-          </Link>
-          <Link
-            href="/blog"
-            className="flex flex-1 items-center justify-center rounded-xl border border-border bg-cardAlt px-2 py-2.5 text-center text-[13px] font-bold leading-tight text-zinc-200"
-          >
-            📖 Blog
-          </Link>
-        </div>
+      <div className="relative grid grid-cols-2 gap-2">
+        <Link
+          href="/sorun/yeni"
+          className="flex items-center justify-center rounded-xl bg-accent px-2 py-3 text-center text-[13px] font-extrabold leading-tight text-black"
+        >
+          🔧 Arıza Çözümleme
+        </Link>
+        <Link
+          href="/al-sat"
+          className="flex items-center justify-center rounded-xl border border-border bg-cardAlt px-2 py-3 text-center text-[13px] font-bold leading-tight text-zinc-200"
+        >
+          🛒 Al / Sat
+        </Link>
+        <Link
+          href="/vitrin"
+          className="flex items-center justify-center rounded-xl border border-border bg-cardAlt px-2 py-3 text-center text-[13px] font-bold leading-tight text-zinc-200"
+        >
+          📸 Galeri
+        </Link>
+        <Link
+          href="/blog"
+          className="flex items-center justify-center rounded-xl border border-border bg-cardAlt px-2 py-3 text-center text-[13px] font-bold leading-tight text-zinc-200"
+        >
+          📖 Blog
+        </Link>
       </div>
     </div>
   );

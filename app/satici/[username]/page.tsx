@@ -200,7 +200,7 @@ export default async function SellerPage({ params }: { params: { username: strin
 
       {cars.length > 0 && (
         <section className="mt-7">
-          <h2 className="mb-3 text-[15px] font-bold">🏎️ Garajından</h2>
+          <h2 className="mb-3 text-[15px] font-bold">🚗 Garajından</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {cars.map((car) => (
               <GarageCarCard key={car.id} car={car} />

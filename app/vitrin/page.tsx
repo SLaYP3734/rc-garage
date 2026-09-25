@@ -62,7 +62,7 @@ export default async function VitrinPage({
 
       {!error && cars.length === 0 && (
         <div className="my-8 rounded-2xl border border-dashed border-border bg-card p-8 text-center">
-          <div className="mb-2 text-4xl">🏎️</div>
+          <div className="mb-2 text-4xl">🚗</div>
           <h3 className="font-bold">Galeri henüz boş</h3>
           <p className="mx-auto mt-1 max-w-[260px] text-sm text-muted">
             İlk aracı sen paylaş, topluluk görsün.

@@ -93,7 +93,7 @@ export default async function BrandPage({ params }: { params: { brand: string } 
 
       {cars.length > 0 && (
         <section className="mb-7">
-          <h2 className="mb-3 text-[15px] font-bold">🏎️ Paylaşılan Araçlar</h2>
+          <h2 className="mb-3 text-[15px] font-bold">🚗 Paylaşılan Araçlar</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {cars.map((car) => (
               <GarageCarCard key={car.id} car={car} showOwner />

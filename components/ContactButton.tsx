@@ -14,7 +14,13 @@ const SUBJECTS = ['Genel Soru', 'Şikayet', 'Öneri', 'Hesap Sorunu', 'Teknik So
 // yerine önce bir "Konu" seçilip mesaj yazılan küçük bir form açılıyor.
 // Gönderilen mesaj yine normal mesajlar tablosuna, yöneticinin
 // gelen kutusuna düşüyor; yöneticinin ekstra bir şey yapmasına gerek yok.
-export default function ContactButton() {
+export default function ContactButton({
+  buttonLabel = '✉️ Her Konuda Bizimle İletişime Geçin',
+  modalTitle = '✉️ Bize Ulaş'
+}: {
+  buttonLabel?: string;
+  modalTitle?: string;
+}) {
   const supabase = createClient();
   const [open, setOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -68,7 +74,7 @@ export default function ContactButton() {
           onClick={() => setOpen(true)}
           className="mx-auto rounded-full border border-border bg-cardAlt px-4 py-2.5 text-[13px] font-semibold text-zinc-200 hover:border-accent hover:text-accent"
         >
-          ✉️ Her Konuda Bizimle İletişime Geçin
+          {buttonLabel}
         </button>
       </div>
 
@@ -88,7 +94,7 @@ export default function ContactButton() {
               ×
             </button>
 
-            <h2 className="mb-1 text-lg font-bold">✉️ Bize Ulaş</h2>
+            <h2 className="mb-1 text-lg font-bold">{modalTitle}</h2>
             <p className="mb-4 text-sm text-muted">
               Sorunun, şikayetin veya önerin ne olursa olsun, buradan bize ulaşabilirsin.
             </p>

@@ -51,7 +51,7 @@ type BlogPostRow = {
 const CONTENT_TABS: { key: 'problems' | 'listings' | 'garage_cars'; label: string; icon: string }[] = [
   { key: 'problems', label: 'Sorular', icon: '🔧' },
   { key: 'listings', label: 'İlanlar', icon: '🛒' },
-  { key: 'garage_cars', label: 'Garaj Araçları', icon: '🏎️' }
+  { key: 'garage_cars', label: 'Garaj Araçları', icon: '🚗' }
 ];
 
 // Yönetici paneli: silme/yasaklama yetkisinin gerçek güvenliği
