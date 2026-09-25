@@ -38,7 +38,7 @@ export default function HomeHero() {
             📸 Galeri
           </Link>
           <Link
-            href="/"
+            href="/blog"
             className="flex flex-1 items-center justify-center rounded-xl border border-border bg-cardAlt px-2 py-2.5 text-center text-[13px] font-bold leading-tight text-zinc-200"
           >
             📖 Blog

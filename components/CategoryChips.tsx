@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CATEGORIES } from '@/lib/types';
 
-export default function CategoryChips({ basePath = '/sorular' }: { basePath?: string }) {
+export default function CategoryChips({ basePath = '/' }: { basePath?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const active = searchParams.get('kategori');

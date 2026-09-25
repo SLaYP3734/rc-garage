@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
-export default function SearchBox({ basePath = '/sorular' }: { basePath?: string }) {
+export default function SearchBox({ basePath = '/' }: { basePath?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [value, setValue] = useState(searchParams.get('q') ?? '');
