@@ -95,7 +95,20 @@ export async function DELETE(request: Request) {
   const { error } = await supabaseAdmin.auth.admin.deleteUser(targetId);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // Supabase'in "Database error deleting user" mesajı çok genel —
+    // altındaki gerçek Postgres hatasını da (varsa) dönüyoruz ki asıl
+    // sebebi görüp düzeltebilelim.
+    const detail = (error as any).cause ?? (error as any).originalError ?? null;
+    console.error('deleteUser error:', JSON.stringify(error), detail);
+    return NextResponse.json(
+      {
+        error: error.message,
+        code: (error as any).code ?? null,
+        status: (error as any).status ?? null,
+        detail: detail ? String(detail) : null
+      },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ ok: true });

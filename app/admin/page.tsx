@@ -326,7 +326,8 @@ export default function AdminPage() {
 
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      alert('Silinemedi: ' + (body.error || res.statusText));
+      const extra = [body.code, body.status, body.detail].filter(Boolean).join(' | ');
+      alert('Silinemedi: ' + (body.error || res.statusText) + (extra ? `\n\nDetay: ${extra}` : ''));
       return;
     }
 
