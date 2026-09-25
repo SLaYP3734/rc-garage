@@ -33,6 +33,7 @@ export default function ProfilPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [myProblems, setMyProblems] = useState<MyProblem[]>([]);
   const [myListings, setMyListings] = useState<any[]>([]);
+  const [profileTab, setProfileTab] = useState<'garaj' | 'sorular' | 'ilanlar'>('garaj');
 
   const loadData = useCallback(
     async (uid: string) => {
@@ -187,39 +188,6 @@ export default function ProfilPage() {
         </Link>
       )}
 
-      <div className="mt-8">
-        <div className="mb-3.5 flex items-center justify-between">
-          <h2 className="text-lg font-bold">Garajım</h2>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="rounded-[9px] bg-accent px-3.5 py-2 text-sm font-bold text-black"
-          >
-            ＋ Araç Ekle
-          </button>
-        </div>
-
-        {cars.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-card p-9 text-center">
-            <h3 className="font-bold">Garajın henüz boş</h3>
-            <p className="mx-auto mb-5 mt-2 max-w-[280px] text-sm text-muted">
-              RC araçlarını ekleyerek kendi garajını oluştur.
-            </p>
-            <button
-              onClick={() => setModalOpen(true)}
-              className="rounded-[9px] bg-accent px-3.5 py-2.5 text-sm font-bold text-black"
-            >
-              ＋ İlk Aracını Ekle
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {cars.map((car) => (
-              <GarageCarCard key={car.id} car={car} />
-            ))}
-          </div>
-        )}
-      </div>
-
       {modalOpen && userId && (
         <GarageCarModal
           userId={userId}
@@ -232,56 +200,110 @@ export default function ProfilPage() {
       )}
 
       <div className="mt-8">
-        <h2 className="mb-3.5 text-lg font-bold">Sorularım</h2>
-        {myProblems.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-center text-sm text-muted">
-            Henüz bir soru sormadın.
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {myProblems.map((p) => (
-              <Link
-                key={p.id}
-                href={`/sorun/${p.slug}`}
-                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3.5 py-3"
+        <div className="mb-4 flex gap-2 border-b border-border">
+          {(
+            [
+              { key: 'garaj', label: `🏎️ Garajım (${cars.length})` },
+              { key: 'sorular', label: `❓ Sorularım (${myProblems.length})` },
+              { key: 'ilanlar', label: `🛒 İlanlarım (${myListings.length})` }
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setProfileTab(t.key)}
+              className={`-mb-px border-b-2 px-1 pb-2.5 text-[13px] font-bold ${
+                profileTab === t.key ? 'border-accent text-accent2' : 'border-transparent text-muted'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {profileTab === 'garaj' && (
+          <>
+            <div className="mb-3.5 flex items-center justify-end">
+              <button
+                onClick={() => setModalOpen(true)}
+                className="rounded-[9px] bg-accent px-3.5 py-2 text-sm font-bold text-black"
               >
-                <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-zinc-200">
-                  {p.title}
-                </span>
-                <span className="shrink-0 text-[11px] text-mutedDim">{timeAgo(p.created_at)}</span>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+                ＋ Araç Ekle
+              </button>
+            </div>
 
-      <div className="mt-8">
-        <h2 className="mb-3.5 text-lg font-bold">İlanlarım — Devam Eden</h2>
-        {activeListings.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-center text-sm text-muted">
-            Devam eden bir ilanın yok.
-          </p>
-        ) : (
-          <div className="-mx-[18px]">
-            {activeListings.map((l) => (
-              <ListingCard key={l.id} listing={l} />
-            ))}
-          </div>
+            {cars.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-border bg-card p-9 text-center">
+                <h3 className="font-bold">Garajın henüz boş</h3>
+                <p className="mx-auto mb-5 mt-2 max-w-[280px] text-sm text-muted">
+                  RC araçlarını ekleyerek kendi garajını oluştur.
+                </p>
+                <button
+                  onClick={() => setModalOpen(true)}
+                  className="rounded-[9px] bg-accent px-3.5 py-2.5 text-sm font-bold text-black"
+                >
+                  ＋ İlk Aracını Ekle
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {cars.map((car) => (
+                  <GarageCarCard key={car.id} car={car} />
+                ))}
+              </div>
+            )}
+          </>
         )}
-      </div>
 
-      <div className="mt-8">
-        <h2 className="mb-3.5 text-lg font-bold">İlanlarım — Satılanlar</h2>
-        {soldListings.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-center text-sm text-muted">
-            Henüz satılmış bir ilanın yok.
-          </p>
-        ) : (
-          <div className="-mx-[18px]">
-            {soldListings.map((l) => (
-              <ListingCard key={l.id} listing={l} />
-            ))}
-          </div>
+        {profileTab === 'sorular' &&
+          (myProblems.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-center text-sm text-muted">
+              Henüz bir soru sormadın.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {myProblems.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/sorun/${p.slug}`}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3.5 py-3"
+                >
+                  <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-zinc-200">
+                    {p.title}
+                  </span>
+                  <span className="shrink-0 text-[11px] text-mutedDim">{timeAgo(p.created_at)}</span>
+                </Link>
+              ))}
+            </div>
+          ))}
+
+        {profileTab === 'ilanlar' && (
+          <>
+            <h3 className="mb-2.5 text-[13px] font-bold text-zinc-400">Devam Eden</h3>
+            {activeListings.length === 0 ? (
+              <p className="mb-6 rounded-2xl border border-dashed border-border bg-card p-5 text-center text-sm text-muted">
+                Devam eden bir ilanın yok.
+              </p>
+            ) : (
+              <div className="-mx-[18px] mb-6">
+                {activeListings.map((l) => (
+                  <ListingCard key={l.id} listing={l} />
+                ))}
+              </div>
+            )}
+
+            <h3 className="mb-2.5 text-[13px] font-bold text-zinc-400">Satılanlar</h3>
+            {soldListings.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-center text-sm text-muted">
+                Henüz satılmış bir ilanın yok.
+              </p>
+            ) : (
+              <div className="-mx-[18px]">
+                {soldListings.map((l) => (
+                  <ListingCard key={l.id} listing={l} />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

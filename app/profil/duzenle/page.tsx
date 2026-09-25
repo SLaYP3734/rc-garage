@@ -45,27 +45,18 @@ export default function EditProfilePage() {
     e.preventDefault();
     if (!userId) return;
 
-    if (!username.trim()) {
-      setInfoMessage('Kullanıcı adı boş olamaz.');
-      return;
-    }
-
     setSavingInfo(true);
     setInfoMessage('Kaydediliyor...');
 
     const { error } = await supabase
       .from('profiles')
-      .update({ username: username.trim(), full_name: fullName.trim() || null })
+      .update({ full_name: fullName.trim() || null })
       .eq('id', userId);
 
     setSavingInfo(false);
 
     if (error) {
-      setInfoMessage(
-        error.message?.includes('duplicate') || error.message?.includes('unique')
-          ? 'Bu kullanıcı adı zaten alınmış.'
-          : 'Kaydedilemedi. Tekrar deneyelim.'
-      );
+      setInfoMessage('Kaydedilemedi. Tekrar deneyelim.');
       return;
     }
 
@@ -108,17 +99,19 @@ export default function EditProfilePage() {
   return (
     <div className="mx-auto max-w-[560px] px-[18px] py-6">
       <h1 className="mb-1 text-lg font-bold">⚙️ Bilgilerimi Düzenle</h1>
-      <p className="mb-6 text-sm text-muted">Kullanıcı adını, ad-soyadını veya şifreni buradan güncelleyebilirsin.</p>
+      <p className="mb-6 text-sm text-muted">Ad-soyadını veya şifreni buradan güncelleyebilirsin.</p>
 
       <form onSubmit={handleSaveInfo} className="mb-8 space-y-3 rounded-2xl border border-border bg-card p-4">
         <h2 className="text-[14px] font-bold text-zinc-300">Profil Bilgileri</h2>
 
         <div>
-          <label className="mb-1 block px-1 text-[11px] font-medium text-mutedDim">Kullanıcı adı</label>
+          <label className="mb-1 block px-1 text-[11px] font-medium text-mutedDim">
+            Kullanıcı adı (değiştirilemez)
+          </label>
           <input
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="h-[48px] w-full rounded-xl border border-border bg-cardAlt px-3.5 text-sm outline-none focus:border-accent"
+            disabled
+            className="h-[48px] w-full rounded-xl border border-border bg-cardAlt px-3.5 text-sm text-mutedDim outline-none"
           />
         </div>
 

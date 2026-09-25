@@ -59,6 +59,51 @@ create trigger trg_bump_answer_like_count
 after insert or delete on answer_likes
 for each row execute function bump_answer_like_count();
 
+-- Bir cevap beğenilince, cevabı yazan kişiye "X cevabını beğendi" bildirimi.
+create or replace function public.notify_answer_liked()
+returns trigger as $$
+declare
+  answer_owner uuid;
+  problem_slug text;
+  liker_username text;
+begin
+  begin
+    select a.user_id, p.slug into answer_owner, problem_slug
+    from answers a join problems p on p.id = a.problem_id
+    where a.id = new.answer_id;
+
+    if answer_owner is null or answer_owner = new.user_id then
+      return new;
+    end if;
+
+    select username into liker_username from profiles where id = new.user_id;
+
+    perform net.http_post(
+      url := 'https://rc-garage-three.vercel.app/api/push/notify',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'x-push-secret', 'qxaMI8oNSebqs7uWyu_nzpI1j8C8RHE9phVtW17rumY'
+      ),
+      body := jsonb_build_object(
+        'target_user_id', answer_owner,
+        'title', coalesce(liker_username, 'Biri') || ' cevabını beğendi',
+        'body', 'Cevabın beğenildi, göz atmak ister misin?',
+        'url', '/sorun/' || coalesce(problem_slug, '')
+      )
+    );
+  exception when others then
+    null;
+  end;
+
+  return new;
+end;
+$$ language plpgsql security definer set search_path = public;
+
+drop trigger if exists trg_notify_answer_liked on answer_likes;
+create trigger trg_notify_answer_liked
+after insert on answer_likes
+for each row execute function public.notify_answer_liked();
+
 -- 2) ZİYARETÇİ İSTATİSTİĞİ (gün/hafta/ay) --------------------------------
 -- live_visitors sadece "şu an" kimin sitede olduğunu tutuyor (satırlar
 -- üzerine yazılıyor), geçmişi tutmuyor. Bu yeni tablo her ziyaretçinin
@@ -112,10 +157,10 @@ begin
     values (
       'ADMIN_UUID_BURAYA',
       new.id,
-      'RC Atölyesi''ne hoş geldin! 🚗' || chr(10) || chr(10) ||
+      'RC Atölyesi''ne hoş geldin!' || chr(10) || chr(10) ||
       'Burada RC araçlarla ilgili sorularını sorabilir, tecrübeli üyelerden yardım alabilir, garajını paylaşabilir ve Al/Sat bölümünden ikinci el parça/araç alıp satabilirsin.' || chr(10) || chr(10) ||
       'Kısa kurallar: birbirimize saygılı olalım, alım-satımda dolandırıcılığa karşı dikkatli olalım (mümkünse elden teslim tercih et), ve kurallara aykırı bir şey görürsen bize bu mesajdan yazarak bildirebilirsin.' || chr(10) || chr(10) ||
-      'İyi eğlenceler! 🏁'
+      'İyi eğlenceler!'
     );
   exception when others then
     null;
