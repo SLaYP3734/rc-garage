@@ -160,7 +160,10 @@ begin
       'RC Atölyesi''ne hoş geldin!' || chr(10) || chr(10) ||
       'Burada RC araçlarla ilgili sorularını sorabilir, tecrübeli üyelerden yardım alabilir, garajını paylaşabilir ve Al/Sat bölümünden ikinci el parça/araç alıp satabilirsin.' || chr(10) || chr(10) ||
       'Kısa kurallar: birbirimize saygılı olalım, alım-satımda dolandırıcılığa karşı dikkatli olalım (mümkünse elden teslim tercih et), ve kurallara aykırı bir şey görürsen bize bu mesajdan yazarak bildirebilirsin.' || chr(10) || chr(10) ||
-      'İyi eğlenceler!'
+      'İyi eğlenceler!' || chr(10) || chr(10) ||
+      'Siteyi telefonuna bir uygulama gibi yükleyip bildirimlerden hiçbirini kaçırmamak ister misin?' || chr(10) ||
+      'Android (Chrome): sağ üstteki üç nokta menüsüne dokun, "Uygulamayı yükle" ya da "Ana ekrana ekle" seçeneğine dokun.' || chr(10) ||
+      'iPhone (Safari): alttaki paylaş simgesine dokun, açılan listeden "Ana Ekrana Ekle" seçeneğine dokun.'
     );
   exception when others then
     null;

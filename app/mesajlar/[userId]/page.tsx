@@ -202,11 +202,16 @@ export default function ConversationPage() {
               >
                 <p className="whitespace-pre-wrap">{m.body}</p>
                 <span
-                  className={`mt-1 block text-right text-[10px] ${
+                  className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${
                     mine ? 'text-black/60' : 'text-mutedDim'
                   }`}
                 >
                   {timeAgo(m.created_at)}
+                  {mine && (
+                    <span className={m.read_at ? 'text-[12px] text-blue-700' : 'text-[12px]'}>
+                      {m.read_at ? '✓✓' : '✓'}
+                    </span>
+                  )}
                 </span>
               </div>
             </div>
