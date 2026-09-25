@@ -72,6 +72,7 @@ export async function GET() {
     urlTag(siteUrl, undefined, 'hourly', '1'),
     urlTag(`${siteUrl}/sorun/yeni`, undefined, 'monthly', '0.5'),
     urlTag(`${siteUrl}/sorular`, undefined, 'hourly', '0.9'),
+    urlTag(`${siteUrl}/hakkimizda`, undefined, 'monthly', '0.6'),
     urlTag(`${siteUrl}/al-sat`, undefined, 'hourly', '0.9'),
     urlTag(`${siteUrl}/ilan/yeni`, undefined, 'monthly', '0.5'),
     urlTag(`${siteUrl}/vitrin`, undefined, 'hourly', '0.7'),

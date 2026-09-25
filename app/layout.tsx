@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Header from '@/components/Header';
 import MarqueeBanner from '@/components/MarqueeBanner';
+import Footer from '@/components/Footer';
 import BottomNav from '@/components/BottomNav';
 import SoundUnlocker from '@/components/SoundUnlocker';
 import PresenceHeartbeat from '@/components/PresenceHeartbeat';
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <MarqueeBanner />
           <InstallBanner />
           <main className="flex-1">{children}</main>
+          <Footer />
           <BottomNav />
         </div>
       </body>
