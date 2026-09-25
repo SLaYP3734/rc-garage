@@ -61,10 +61,11 @@ function urlTag(loc: string, lastmod?: string, changefreq = 'weekly', priority =
 }
 
 export async function GET() {
-  const [problems, listings, garageCars] = await Promise.all([
+  const [problems, listings, garageCars, blogPosts] = await Promise.all([
     fetchRows('problems', 'slug,created_at,brand'),
     fetchRows('listings', 'slug,created_at,brand'),
-    fetchRows('garage_cars', 'brand,created_at')
+    fetchRows('garage_cars', 'brand,created_at'),
+    fetchRows('blog_posts', 'slug,created_at&published=eq.true')
   ]);
 
   const staticEntries = [
@@ -72,11 +73,13 @@ export async function GET() {
     urlTag(`${siteUrl}/sorun/yeni`, undefined, 'monthly', '0.5'),
     urlTag(`${siteUrl}/al-sat`, undefined, 'hourly', '0.9'),
     urlTag(`${siteUrl}/ilan/yeni`, undefined, 'monthly', '0.5'),
-    urlTag(`${siteUrl}/vitrin`, undefined, 'hourly', '0.7')
+    urlTag(`${siteUrl}/vitrin`, undefined, 'hourly', '0.7'),
+    urlTag(`${siteUrl}/blog`, undefined, 'daily', '0.7')
   ];
 
   const problemEntries = problems.map((p) => urlTag(`${siteUrl}/sorun/${p.slug}`, p.created_at));
   const listingEntries = listings.map((l) => urlTag(`${siteUrl}/ilan/${l.slug}`, l.created_at));
+  const blogEntries = blogPosts.map((b) => urlTag(`${siteUrl}/blog/${b.slug}`, b.created_at, 'weekly', '0.7'));
 
   const brandSlugs = new Set<string>();
   [...problems, ...listings, ...garageCars].forEach((row) => {
@@ -91,6 +94,7 @@ export async function GET() {
     ...staticEntries,
     ...problemEntries,
     ...listingEntries,
+    ...blogEntries,
     ...brandEntries
   ].join('')}</urlset>`;
 

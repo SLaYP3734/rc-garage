@@ -33,6 +33,12 @@ export function buildListingSlug(brand: string, model: string, title: string): s
   return `${base}-${suffix}`;
 }
 
+export function buildBlogSlug(title: string): string {
+  const base = slugify(title) || 'yazi';
+  const suffix = Math.random().toString(36).slice(2, 8);
+  return `${base}-${suffix}`;
+}
+
 // Marka sayfalarının (/marka/traxxas gibi) adresini üretir.
 export function brandSlug(brand: string): string {
   return slugify(brand);

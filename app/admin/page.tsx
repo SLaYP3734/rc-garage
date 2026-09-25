@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { timeAgo } from '@/lib/time';
 
@@ -39,6 +40,14 @@ type ActiveUserRow = {
 
 type VisitorStats = { today: number; week: number; month: number };
 
+type BlogPostRow = {
+  id: string;
+  slug: string;
+  title: string;
+  published: boolean;
+  created_at: string;
+};
+
 const CONTENT_TABS: { key: 'problems' | 'listings' | 'garage_cars'; label: string; icon: string }[] = [
   { key: 'problems', label: 'Sorular', icon: '🔧' },
   { key: 'listings', label: 'İlanlar', icon: '🛒' },
@@ -55,7 +64,7 @@ export default function AdminPage() {
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [tab, setTab] = useState<
-    'problems' | 'listings' | 'garage_cars' | 'users' | 'emails' | 'active' | 'stats' | 'broadcast'
+    'problems' | 'listings' | 'garage_cars' | 'users' | 'emails' | 'active' | 'stats' | 'broadcast' | 'blog'
   >('problems');
   const [rows, setRows] = useState<Row[]>([]);
   const [users, setUsers] = useState<UserRow[]>([]);
@@ -71,6 +80,7 @@ export default function AdminPage() {
   const [broadcastText, setBroadcastText] = useState('');
   const [broadcasting, setBroadcasting] = useState(false);
   const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [blogPosts, setBlogPosts] = useState<BlogPostRow[]>([]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -85,6 +95,7 @@ export default function AdminPage() {
     else if (tab === 'emails') loadEmails();
     else if (tab === 'active') loadActiveUsers();
     else if (tab === 'stats') loadVisitorStats();
+    else if (tab === 'blog') loadBlogPosts();
     else if (tab === 'broadcast') {
       /* form yeterli, ekstra veri yüklemeye gerek yok */
     } else loadContent();
@@ -296,6 +307,43 @@ export default function AdminPage() {
     setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, is_verified: next } : u)));
   }
 
+  async function loadBlogPosts() {
+    setLoading(true);
+    const { data } = await supabase
+      .from('blog_posts')
+      .select('id, slug, title, published, created_at')
+      .order('created_at', { ascending: false });
+    setBlogPosts((data ?? []) as BlogPostRow[]);
+    setLoading(false);
+  }
+
+  async function togglePublished(post: BlogPostRow) {
+    setBusyId(post.id);
+    const { error } = await supabase.from('blog_posts').update({ published: !post.published }).eq('id', post.id);
+    setBusyId(null);
+
+    if (error) {
+      alert('İşlem yapılamadı: ' + error.message);
+      return;
+    }
+
+    setBlogPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, published: !p.published } : p)));
+  }
+
+  async function deleteBlogPost(id: string) {
+    if (!confirm('Bu yazıyı kalıcı olarak silmek istediğine emin misin?')) return;
+    setBusyId(id);
+    const { error } = await supabase.from('blog_posts').delete().eq('id', id);
+    setBusyId(null);
+
+    if (error) {
+      alert('Silinemedi: ' + error.message);
+      return;
+    }
+
+    setBlogPosts((prev) => prev.filter((p) => p.id !== id));
+  }
+
   if (checking) {
     return <div className="p-6 text-center text-muted">Yükleniyor...</div>;
   }
@@ -371,6 +419,14 @@ export default function AdminPage() {
           }`}
         >
           📣 Toplu Mesaj
+        </button>
+        <button
+          onClick={() => setTab('blog')}
+          className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${
+            tab === 'blog' ? 'border-accent bg-accent/15 text-accent2' : 'border-border text-muted'
+          }`}
+        >
+          📖 Blog
         </button>
       </div>
 
@@ -473,6 +529,64 @@ export default function AdminPage() {
                     {e.username || 'İsimsiz kullanıcı'}
                   </p>
                   <p className="truncate text-[12px] text-mutedDim">{e.email || '—'}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : tab === 'blog' ? (
+        <>
+          <Link
+            href="/admin/blog/yeni"
+            className="mb-3 block rounded-xl bg-accent px-4 py-3 text-center text-sm font-extrabold text-black"
+          >
+            + Yeni Yazı
+          </Link>
+
+          {!loading && blogPosts.length === 0 && <p className="text-sm text-muted">Henüz yazı yok.</p>}
+
+          <div className="space-y-2">
+            {blogPosts.map((post) => (
+              <div
+                key={post.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3.5 py-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-semibold text-zinc-100">
+                    {post.title}
+                    {!post.published && (
+                      <span className="ml-1.5 rounded-full bg-zinc-500/15 px-1.5 py-0.5 text-[10px] font-bold text-zinc-400">
+                        TASLAK
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-[11px] text-mutedDim">{timeAgo(post.created_at)}</p>
+                </div>
+                <div className="flex shrink-0 flex-col items-stretch gap-1.5">
+                  <Link
+                    href={`/admin/blog/${post.id}/duzenle`}
+                    className="rounded-lg border border-border bg-cardAlt px-2.5 py-1.5 text-center text-[11px] font-bold text-zinc-300"
+                  >
+                    ✏️ Düzenle
+                  </Link>
+                  <button
+                    onClick={() => togglePublished(post)}
+                    disabled={busyId === post.id}
+                    className={`rounded-lg border px-2.5 py-1.5 text-[11px] font-bold disabled:opacity-40 ${
+                      post.published
+                        ? 'border-zinc-500/40 bg-zinc-500/10 text-zinc-400'
+                        : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
+                    }`}
+                  >
+                    {busyId === post.id ? '...' : post.published ? 'Yayından Kaldır' : '✅ Yayınla'}
+                  </button>
+                  <button
+                    onClick={() => deleteBlogPost(post.id)}
+                    disabled={busyId === post.id}
+                    className="rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-[11px] font-bold text-red-400 disabled:opacity-50"
+                  >
+                    🗑️ Sil
+                  </button>
                 </div>
               </div>
             ))}

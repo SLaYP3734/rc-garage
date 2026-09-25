@@ -77,3 +77,87 @@ textarea::placeholder {
 .marquee-track {
   animation: marquee-scroll 22s linear infinite;
 }
+
+/* Blog yazısı içeriği (hem yayınlanan sayfada hem editörde) için ortak
+   tipografi kuralları. */
+.blog-content h2,
+.blog-editor h2 {
+  margin-top: 1.4em;
+  margin-bottom: 0.4em;
+  font-size: 1.25em;
+  font-weight: 800;
+  color: #f4f4f5;
+}
+
+.blog-content h3,
+.blog-editor h3 {
+  margin-top: 1.2em;
+  margin-bottom: 0.35em;
+  font-size: 1.08em;
+  font-weight: 700;
+  color: #f4f4f5;
+}
+
+.blog-content p,
+.blog-editor p {
+  margin-bottom: 0.85em;
+  line-height: 1.65;
+  color: #d4d4d8;
+  font-size: 14px;
+}
+
+.blog-content ul,
+.blog-content ol,
+.blog-editor ul,
+.blog-editor ol {
+  margin-bottom: 0.85em;
+  padding-left: 1.3em;
+  color: #d4d4d8;
+  font-size: 14px;
+}
+
+.blog-content ul,
+.blog-editor ul {
+  list-style: disc;
+}
+
+.blog-content ol,
+.blog-editor ol {
+  list-style: decimal;
+}
+
+.blog-content blockquote,
+.blog-editor blockquote {
+  margin: 0.9em 0;
+  border-left: 3px solid #ff6a00;
+  padding-left: 0.9em;
+  color: #a1a1aa;
+  font-style: italic;
+}
+
+.blog-content a,
+.blog-editor a {
+  color: #ff8a3d;
+  text-decoration: underline;
+}
+
+.blog-content img,
+.blog-editor img {
+  max-width: 100%;
+  border-radius: 12px;
+  margin: 0.9em 0;
+}
+
+.blog-editor .ProseMirror {
+  min-height: 220px;
+  outline: none;
+  color: #d4d4d8;
+}
+
+.blog-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: #5f5f66;
+  pointer-events: none;
+}
