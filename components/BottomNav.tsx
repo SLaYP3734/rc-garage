@@ -8,7 +8,7 @@ import { playNotificationSound } from '@/lib/notificationSound';
 import { HomeIcon, WrenchIcon, ChatIcon, CartIcon, UserIcon } from '@/components/NavIcons';
 
 const items = [
-  { href: '/', label: 'Akış', Icon: HomeIcon },
+  { href: '/sorular', label: 'Akış', Icon: HomeIcon },
   { href: '/sorun/yeni', label: 'Arıza', Icon: WrenchIcon, primary: true },
   { href: '/mesajlar', label: 'Mesajlar', Icon: ChatIcon },
   { href: '/al-sat', label: 'Al / Sat', Icon: CartIcon },

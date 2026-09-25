@@ -122,7 +122,7 @@ export default async function BrandPage({ params }: { params: { brand: string } 
         <section>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[15px] font-bold">🔧 Sorular</h2>
-            <Link href="/" className="text-[12px] font-semibold text-accent2">
+            <Link href="/sorular" className="text-[12px] font-semibold text-accent2">
               Tüm sorular
             </Link>
           </div>

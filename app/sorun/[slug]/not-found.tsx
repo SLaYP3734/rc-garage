@@ -9,7 +9,7 @@ export default function NotFound() {
         Silinmiş ya da adresi yanlış yazılmış olabilir.
       </p>
       <Link
-        href="/"
+        href="/sorular"
         className="mt-5 inline-block rounded-xl bg-accent px-4 py-2.5 text-sm font-bold text-black"
       >
         Akışa dön

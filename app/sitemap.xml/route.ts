@@ -74,7 +74,7 @@ export async function GET() {
     urlTag(`${siteUrl}/al-sat`, undefined, 'hourly', '0.9'),
     urlTag(`${siteUrl}/ilan/yeni`, undefined, 'monthly', '0.5'),
     urlTag(`${siteUrl}/vitrin`, undefined, 'hourly', '0.7'),
-    urlTag(`${siteUrl}/blog`, undefined, 'daily', '0.7')
+    urlTag(`${siteUrl}/sorular`, undefined, 'hourly', '0.9')
   ];
 
   const problemEntries = problems.map((p) => urlTag(`${siteUrl}/sorun/${p.slug}`, p.created_at));

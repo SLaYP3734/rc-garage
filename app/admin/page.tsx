@@ -307,6 +307,32 @@ export default function AdminPage() {
     setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, is_verified: next } : u)));
   }
 
+  async function deleteUser(user: UserRow) {
+    if (
+      !confirm(
+        `${user.username || 'Bu kullanıcı'} hesabını ve ona ait TÜM verileri (sorular, ilanlar, mesajlar vs.) kalıcı olarak silmek istediğine emin misin? Bu işlem geri alınamaz.`
+      )
+    ) {
+      return;
+    }
+
+    setBusyId(user.id);
+    const res = await fetch('/api/admin/users', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetId: user.id })
+    });
+    setBusyId(null);
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      alert('Silinemedi: ' + (body.error || res.statusText));
+      return;
+    }
+
+    setUsers((prev) => prev.filter((u) => u.id !== user.id));
+  }
+
   async function loadBlogPosts() {
     setLoading(true);
     const { data } = await supabase
@@ -656,6 +682,13 @@ export default function AdminPage() {
                     }`}
                   >
                     {busyId === u.id ? '...' : u.is_banned ? '✅ Erişimi Aç' : '🚫 Erişimi Kapat'}
+                  </button>
+                  <button
+                    onClick={() => deleteUser(u)}
+                    disabled={busyId === u.id || u.id === ADMIN_USER_ID}
+                    className="rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-[11px] font-bold text-red-400 disabled:opacity-40"
+                  >
+                    {busyId === u.id ? '...' : '🗑️ Kalıcı Sil'}
                   </button>
                 </div>
               </div>
