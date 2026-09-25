@@ -168,3 +168,29 @@ export function badgeForSolvedCount(count: number): { label: string; icon: strin
   if (count >= 1) return { label: 'Yardımsever', icon: '🌱' };
   return null;
 }
+
+const BADGE_STEPS = [
+  { threshold: 1, label: 'Yardımsever', icon: '🌱' },
+  { threshold: 5, label: 'Uzman', icon: '🔧' },
+  { threshold: 15, label: 'Usta', icon: '🏆' }
+];
+
+// Profil sayfasında "bir sonraki rozete X çözüm kaldı" göstermek için.
+export function nextBadgeProgress(count: number): {
+  current: { label: string; icon: string } | null;
+  next: { label: string; icon: string; remaining: number; progressPercent: number } | null;
+} {
+  const current = badgeForSolvedCount(count);
+  const stepIndex = BADGE_STEPS.findIndex((s) => s.threshold > count);
+  if (stepIndex === -1) return { current, next: null };
+
+  const next = BADGE_STEPS[stepIndex];
+  const prevThreshold = stepIndex > 0 ? BADGE_STEPS[stepIndex - 1].threshold : 0;
+  const span = next.threshold - prevThreshold;
+  const progressPercent = span > 0 ? Math.round(((count - prevThreshold) / span) * 100) : 0;
+
+  return {
+    current,
+    next: { label: next.label, icon: next.icon, remaining: next.threshold - count, progressPercent }
+  };
+}

@@ -12,6 +12,7 @@ import PushSubscribe from '@/components/PushSubscribe';
 import ListingCard from '@/components/ListingCard';
 import { timeAgo } from '@/lib/time';
 import { getCurrentUser } from '@/lib/authUser';
+import { nextBadgeProgress } from '@/lib/types';
 
 const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
 
@@ -34,6 +35,7 @@ export default function ProfilPage() {
   const [myProblems, setMyProblems] = useState<MyProblem[]>([]);
   const [myListings, setMyListings] = useState<any[]>([]);
   const [profileTab, setProfileTab] = useState<'garaj' | 'sorular' | 'ilanlar'>('garaj');
+  const [solvedCount, setSolvedCount] = useState(0);
 
   const loadData = useCallback(
     async (uid: string) => {
@@ -44,7 +46,8 @@ export default function ProfilPage() {
         { count: followers },
         { count: followingC },
         { data: problems },
-        { data: listings }
+        { data: listings },
+        { count: solved }
       ] = await Promise.all([
         supabase.from('profiles').select('username, avatar_url').eq('id', uid).single(),
         supabase
@@ -71,7 +74,8 @@ export default function ProfilPage() {
           )
           .eq('user_id', uid)
           .order('created_at', { ascending: false })
-          .limit(50)
+          .limit(50),
+        supabase.from('answers').select('id', { count: 'exact', head: true }).eq('user_id', uid).eq('is_accepted', true)
       ]);
 
       setUsername(profile?.username ?? '');
@@ -82,6 +86,7 @@ export default function ProfilPage() {
       setFollowingCount(followingC ?? 0);
       setMyProblems((problems ?? []) as MyProblem[]);
       setMyListings(listings ?? []);
+      setSolvedCount(solved ?? 0);
     },
     [supabase]
   );
@@ -155,6 +160,8 @@ export default function ProfilPage() {
         <Stat value={followerCount} label="Takipçi" />
         <Stat value={followingCount} label="Takip" />
       </div>
+
+      <BadgeProgressCard solvedCount={solvedCount} />
 
       <PushSubscribe />
 
@@ -315,6 +322,45 @@ function Stat({ value, label }: { value: number; label: string }) {
     <div className="text-center">
       <strong className="block text-xl">{value}</strong>
       <span className="block text-xs text-muted">{label}</span>
+    </div>
+  );
+}
+
+// Rozet sistemini görünür kılmak için: kaç çözümle bulunduğunu ve bir
+// sonraki rozete kaç çözüm kaldığını gösteren küçük bir kart.
+function BadgeProgressCard({ solvedCount }: { solvedCount: number }) {
+  const { current, next } = nextBadgeProgress(solvedCount);
+
+  if (!current && !next) return null;
+
+  return (
+    <div className="mb-2.5 rounded-2xl border border-accent/25 bg-accent/5 px-4 py-3.5">
+      <div className="flex items-center justify-between">
+        <span className="text-[13px] font-bold text-zinc-200">
+          {current ? (
+            <>
+              {current.icon} {current.label}
+            </>
+          ) : (
+            'Henüz rozetin yok'
+          )}
+        </span>
+        <span className="text-[11px] text-mutedDim">{solvedCount} çözüm</span>
+      </div>
+
+      {next && (
+        <>
+          <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-cardAlt">
+            <div
+              className="h-full rounded-full bg-accent transition-all"
+              style={{ width: `${next.progressPercent}%` }}
+            />
+          </div>
+          <p className="mt-1.5 text-[11.5px] text-mutedDim">
+            {next.icon} {next.label} rozetine <strong className="text-accent2">{next.remaining} çözüm</strong> kaldı
+          </p>
+        </>
+      )}
     </div>
   );
 }
