@@ -12,6 +12,8 @@ import FeaturedCar from '@/components/FeaturedCar';
 import NewItemsBanner from '@/components/NewItemsBanner';
 import ContactButton from '@/components/ContactButton';
 import HomeStats from '@/components/HomeStats';
+import WeeklyShowcase from '@/components/WeeklyShowcase';
+import CategoryFollowButton from '@/components/CategoryFollowButton';
 import { attachUsernames } from '@/lib/attachUsernames';
 
 export const revalidate = 60;
@@ -40,18 +42,58 @@ export default async function HomePage({
 }) {
   const supabase = createClient();
 
-  const [stats, { data: topHelpers }, { data: featuredCars }, { data: topSellersRaw }] = await Promise.all([
-    getStats(supabase),
-    supabase.from('top_helpers').select('*').limit(8),
-    supabase
-      .from('garage_cars')
-      .select('id, user_id, brand, model, image_url, like_count')
-      .not('image_url', 'is', null)
-      .order('like_count', { ascending: false })
-      .order('created_at', { ascending: false })
-      .limit(1),
-    supabase.from('top_sellers').select('*').limit(8)
-  ]);
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const [stats, { data: topHelpers }, { data: featuredCars }, { data: topSellersRaw }, { data: bestAnswerRaw }, { data: bestListingRaw }] =
+    await Promise.all([
+      getStats(supabase),
+      supabase.from('top_helpers').select('*').limit(8),
+      supabase
+        .from('garage_cars')
+        .select('id, user_id, brand, model, image_url, like_count')
+        .not('image_url', 'is', null)
+        .order('like_count', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(1),
+      supabase.from('top_sellers').select('*').limit(8),
+      supabase
+        .from('answers')
+        .select('body, like_count, created_at, problems(title, slug), profiles(username)')
+        .gt('like_count', 0)
+        .gte('created_at', weekAgo)
+        .order('like_count', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('listings')
+        .select('title, price, image_url, slug, favorite_count, created_at')
+        .eq('status', 'active')
+        .gt('favorite_count', 0)
+        .gte('created_at', weekAgo)
+        .order('favorite_count', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    ]);
+
+  const bestAnswer = bestAnswerRaw
+    ? {
+        body: (bestAnswerRaw as any).body,
+        like_count: (bestAnswerRaw as any).like_count,
+        problem_title: (bestAnswerRaw as any).problems?.title ?? '',
+        problem_slug: (bestAnswerRaw as any).problems?.slug ?? '',
+        username: (bestAnswerRaw as any).profiles?.username ?? null
+      }
+    : null;
+
+  const bestListing = bestListingRaw
+    ? {
+        title: (bestListingRaw as any).title,
+        price: (bestListingRaw as any).price,
+        image_url: (bestListingRaw as any).image_url,
+        slug: (bestListingRaw as any).slug,
+        favorite_count: (bestListingRaw as any).favorite_count
+      }
+    : null;
 
   const featuredCarWithUsername = await attachUsernames(supabase, featuredCars ?? []);
   const featuredCar = featuredCarWithUsername[0] ?? null;
@@ -101,6 +143,9 @@ export default async function HomePage({
       <SearchBox />
       <VehicleTypeChips basePath="/" />
       <CategoryChips />
+      <CategoryFollowButton />
+
+      <WeeklyShowcase bestAnswer={bestAnswer} bestListing={bestListing} />
 
       <div className="flex items-center justify-between px-4 pb-2 pt-1">
         <h2 className="text-[15px] font-bold text-zinc-300">Son Sorular</h2>

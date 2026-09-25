@@ -17,7 +17,7 @@ async function getSellerData(username: string) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, username, avatar_url, created_at')
+    .select('id, username, avatar_url, created_at, is_verified')
     .eq('username', username)
     .maybeSingle();
 
@@ -128,12 +128,27 @@ export default async function SellerPage({ params }: { params: { username: strin
       <div className="flex items-center gap-4">
         <Avatar url={profile.avatar_url} name={profile.username} size={72} />
         <div>
-          <h1 className="text-[19px] font-extrabold">{profile.username}</h1>
+          <h1 className="flex items-center gap-1.5 text-[19px] font-extrabold">
+            {profile.username}
+            {(profile as any).is_verified && (
+              <span
+                title="Doğrulanmış Satıcı"
+                className="inline-flex items-center gap-0.5 rounded-full bg-sky-500/15 px-1.5 py-0.5 text-[11px] font-bold text-sky-400"
+              >
+                ✓
+              </span>
+            )}
+          </h1>
           <p className="text-[12px] text-muted">Üye olalı {timeAgo(profile.created_at)}</p>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[11px] font-bold text-accent2">
               {rank.icon} {rank.label}
             </span>
+            {(profile as any).is_verified && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/15 px-2 py-0.5 text-[11px] font-bold text-sky-400">
+                ✓ Doğrulanmış Satıcı
+              </span>
+            )}
             {badge && (
               <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[11px] font-bold text-accent2">
                 {badge.icon} {badge.label} · {solvedCount} çözüm

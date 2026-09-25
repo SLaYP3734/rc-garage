@@ -142,3 +142,103 @@ drop trigger if exists trg_notify_price_drop on listings;
 create trigger trg_notify_price_drop
 after update on listings
 for each row execute function public.notify_price_drop();
+
+-- 3) "HAFTANIN İLANI" için: favori sayısını herkesin okuyabileceği bir
+-- sütunda tutuyoruz (listing_favorites tablosunun kendisi gizli — herkes
+-- sadece kendi favorilerini görebilir, RLS öyle). Bu sütun ana sayfadaki
+-- vitrin için kullanılacak.
+
+alter table listings add column if not exists favorite_count int not null default 0;
+
+create or replace function public.bump_listing_favorite_count()
+returns trigger as $$
+begin
+  if (tg_op = 'INSERT') then
+    update listings set favorite_count = favorite_count + 1 where id = new.listing_id;
+    return new;
+  elsif (tg_op = 'DELETE') then
+    update listings set favorite_count = greatest(favorite_count - 1, 0) where id = old.listing_id;
+    return old;
+  end if;
+  return null;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists trg_bump_listing_favorite_count on listing_favorites;
+create trigger trg_bump_listing_favorite_count
+after insert or delete on listing_favorites
+for each row execute function public.bump_listing_favorite_count();
+
+-- 4) DOĞRULANMIŞ SATICI ROZETİ ---------------------------------------------
+-- Bu sütuna sadece admin dokunabiliyor — normal RLS "kendi profilini
+-- güncelle" politikası bu sütunu içermesin diye, güncelleme sadece
+-- aşağıdaki set_verified() fonksiyonu üzerinden yapılabiliyor ve
+-- fonksiyon çağıranın admin olup olmadığını kontrol ediyor.
+
+alter table profiles add column if not exists is_verified boolean not null default false;
+
+create or replace function public.set_verified(target_id uuid, verified boolean)
+returns void as $$
+begin
+  if auth.uid()::text <> 'ADMIN_UUID_BURAYA' then
+    raise exception 'yetkisiz';
+  end if;
+
+  update profiles set is_verified = verified where id = target_id;
+end;
+$$ language plpgsql security definer set search_path = public;
+
+-- 5) KATEGORİ TAKİBİ --------------------------------------------------------
+
+create table if not exists category_follows (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references profiles(id) on delete cascade,
+  category text not null,
+  created_at timestamptz not null default now(),
+  unique (user_id, category)
+);
+
+alter table category_follows enable row level security;
+
+drop policy if exists "category_follows_select_own" on category_follows;
+create policy "category_follows_select_own" on category_follows for select using (auth.uid() = user_id);
+
+drop policy if exists "category_follows_insert_own" on category_follows;
+create policy "category_follows_insert_own" on category_follows for insert with check (auth.uid() = user_id);
+
+drop policy if exists "category_follows_delete_own" on category_follows;
+create policy "category_follows_delete_own" on category_follows for delete using (auth.uid() = user_id);
+
+create or replace function public.notify_category_follow()
+returns trigger as $$
+declare
+  follower record;
+begin
+  for follower in select user_id from category_follows where category = new.category and user_id <> new.user_id loop
+    begin
+      perform net.http_post(
+        url := 'https://rc-garage-three.vercel.app/api/push/notify',
+        headers := jsonb_build_object(
+          'Content-Type', 'application/json',
+          'x-push-secret', 'qxaMI8oNSebqs7uWyu_nzpI1j8C8RHE9phVtW17rumY'
+        ),
+        body := jsonb_build_object(
+          'target_user_id', follower.user_id,
+          'title', 'Takip ettiğin kategoride yeni bir soru var',
+          'body', new.title,
+          'url', '/sorun/' || new.slug
+        )
+      );
+    exception when others then
+      null;
+    end;
+  end loop;
+
+  return new;
+end;
+$$ language plpgsql security definer set search_path = public;
+
+drop trigger if exists trg_notify_category_follow on problems;
+create trigger trg_notify_category_follow
+after insert on problems
+for each row execute function public.notify_category_follow();

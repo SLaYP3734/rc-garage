@@ -25,7 +25,7 @@ async function getListing(slug: string) {
   const { data: listing } = await supabase
     .from('listings')
     .select(
-      'id, user_id, title, brand, model, category, condition, price, description, image_url, status, slug, created_at, min_offer_amount, profiles(username, avatar_url)'
+      'id, user_id, title, brand, model, category, condition, price, description, image_url, status, slug, created_at, min_offer_amount, profiles(username, avatar_url, is_verified)'
     )
     .eq('slug', slug)
     .single();
@@ -74,6 +74,7 @@ export default async function ListingPage({ params }: { params: { slug: string }
   const isOwner = user?.id === listing.user_id;
   const sellerUsername = (listing as any).profiles?.username as string | null;
   const sellerAvatarUrl = (listing as any).profiles?.avatar_url as string | null;
+  const sellerIsVerified = (listing as any).profiles?.is_verified as boolean | null;
 
   let sellerInfo: { createdAt: string; solvedCount: number; listingCount: number } | null = null;
   let sellerRatingStats: { avg_rating: number; rating_count: number } | null = null;
@@ -172,6 +173,14 @@ export default async function ListingPage({ params }: { params: { slug: string }
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[12.5px] font-semibold text-zinc-200">
               {sellerUsername}
+              {sellerIsVerified && (
+                <span
+                  title="Doğrulanmış Satıcı"
+                  className="ml-1.5 inline-flex items-center rounded-full bg-sky-500/15 px-1.5 py-0.5 text-[10px] font-bold text-sky-400"
+                >
+                  ✓ Doğrulanmış
+                </span>
+              )}
               {sellerBadge && (
                 <span className="ml-1.5 text-[11px] font-medium text-accent2">
                   {sellerBadge.icon} {sellerBadge.label}
