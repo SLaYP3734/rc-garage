@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Problem, Listing } from '@/lib/types';
 import { timeAgo } from '@/lib/time';
 import ListingCarouselCard from '@/components/ListingCarouselCard';
+import RandomProblemsStrip from '@/components/RandomProblemsStrip';
 import SearchBox from '@/components/SearchBox';
 import CategoryChips from '@/components/CategoryChips';
 import VehicleTypeChips from '@/components/VehicleTypeChips';
@@ -245,6 +246,8 @@ export default async function HomePage({
           </Link>
         </div>
       )}
+
+      <RandomProblemsStrip />
 
       <TopSellers sellers={topSellers.map((s: any) => ({ ...s, username: s.author_username }))} />
 

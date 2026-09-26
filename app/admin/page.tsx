@@ -23,6 +23,7 @@ type UserRow = {
   full_name: string | null;
   is_banned: boolean;
   is_verified: boolean;
+  is_content_creator: boolean;
   created_at: string;
 };
 
@@ -249,14 +250,14 @@ export default function AdminPage() {
     setLoading(true);
     let query = supabase
       .from('profiles')
-      .select('id, username, full_name, is_banned, is_verified, created_at')
+      .select('id, username, full_name, is_banned, is_verified, is_content_creator, created_at')
       .order('created_at', { ascending: false })
       .limit(50);
 
     if (userSearch.trim()) {
       query = supabase
         .from('profiles')
-        .select('id, username, full_name, is_banned, is_verified, created_at')
+        .select('id, username, full_name, is_banned, is_verified, is_content_creator, created_at')
         .ilike('username', `%${userSearch.trim()}%`)
         .limit(50);
     }
@@ -310,6 +311,20 @@ export default function AdminPage() {
     }
 
     setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, is_verified: next } : u)));
+  }
+
+  async function toggleContentCreator(user: UserRow) {
+    const next = !user.is_content_creator;
+    setBusyId(user.id);
+    const { error } = await supabase.rpc('set_content_creator', { target_id: user.id, is_creator: next });
+    setBusyId(null);
+
+    if (error) {
+      alert('İşlem yapılamadı: ' + error.message);
+      return;
+    }
+
+    setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, is_content_creator: next } : u)));
   }
 
   async function toggleFeatured(row: Row) {
@@ -674,6 +689,11 @@ export default function AdminPage() {
                         ✓ DOĞRULANMIŞ
                       </span>
                     )}
+                    {u.is_content_creator && (
+                      <span className="ml-1.5 rounded-full bg-violet-500/15 px-1.5 py-0.5 text-[10px] font-bold text-violet-400">
+                        ✍️ İÇERİK ÜRETİCİ
+                      </span>
+                    )}
                   </p>
                   <p className="text-[11px] text-mutedDim">{u.full_name || '—'}</p>
                 </div>
@@ -688,6 +708,21 @@ export default function AdminPage() {
                     }`}
                   >
                     {busyId === u.id ? '...' : u.is_verified ? 'Doğrulamayı Kaldır' : '✓ Doğrula'}
+                  </button>
+                  <button
+                    onClick={() => toggleContentCreator(u)}
+                    disabled={busyId === u.id}
+                    className={`rounded-lg border px-2.5 py-1.5 text-[11px] font-bold disabled:opacity-40 ${
+                      u.is_content_creator
+                        ? 'border-zinc-500/40 bg-zinc-500/10 text-zinc-400'
+                        : 'border-violet-500/40 bg-violet-500/10 text-violet-400'
+                    }`}
+                  >
+                    {busyId === u.id
+                      ? '...'
+                      : u.is_content_creator
+                      ? 'İçerik Üreticiyi Kaldır'
+                      : '✍️ İçerik Üretici Yap'}
                   </button>
                   <button
                     onClick={() => toggleBan(u)}

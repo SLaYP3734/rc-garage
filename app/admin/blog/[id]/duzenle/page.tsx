@@ -15,51 +15,65 @@ type ExistingPost = {
   cover_image_url: string | null;
   content: string;
   published: boolean;
+  author_id: string | null;
 };
 
+// Admin her yazıyı düzenleyebilir; "İçerik Üretici" rozetine sahip bir
+// kullanıcı ise sadece KENDİ yazısını düzenleyebilir. Yazı RLS sayesinde
+// herkese (yayınlanmışsa) görünür olabildiği için, burada ayrıca
+// "bu yazı gerçekten bana mı ait" kontrolü yapılıyor — sadece görebilmek,
+// düzenleyebilmek anlamına gelmiyor.
 export default function EditBlogPostPage() {
   const supabase = createClient();
   const params = useParams();
   const id = params.id as string;
 
   const [checking, setChecking] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [allowed, setAllowed] = useState(false);
   const [post, setPost] = useState<ExistingPost | null>(null);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
-      const admin = !!user && !!ADMIN_USER_ID && user.id === ADMIN_USER_ID;
-      setIsAdmin(admin);
-
-      if (admin) {
-        const { data } = await supabase
-          .from('blog_posts')
-          .select('id, slug, title, excerpt, cover_image_url, content, published')
-          .eq('id', id)
-          .maybeSingle();
-
-        if (data) setPost(data as ExistingPost);
-        else setNotFound(true);
+      if (!user) {
+        setChecking(false);
+        return;
       }
 
+      const isAdmin = !!ADMIN_USER_ID && user.id === ADMIN_USER_ID;
+
+      const { data } = await supabase
+        .from('blog_posts')
+        .select('id, slug, title, excerpt, cover_image_url, content, published, author_id')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (!data) {
+        setNotFound(true);
+        setChecking(false);
+        return;
+      }
+
+      const isOwner = data.author_id === user.id;
+      setAllowed(isAdmin || isOwner);
+      setPost(data as ExistingPost);
       setChecking(false);
     });
   }, [supabase, id]);
 
   if (checking) return <div className="p-6 text-center text-muted">Yükleniyor...</div>;
 
-  if (!isAdmin) {
+  if (notFound) {
+    return <div className="p-8 text-center text-muted">Yazı bulunamadı.</div>;
+  }
+
+  if (!allowed || !post) {
     return (
       <div className="p-8 text-center text-muted">
         <div className="mb-2 text-4xl">🔒</div>
         <p>Bu sayfayı görmeye yetkin yok.</p>
       </div>
     );
-  }
-
-  if (notFound || !post) {
-    return <div className="p-8 text-center text-muted">Yazı bulunamadı.</div>;
   }
 
   return <BlogPostForm existingPost={post} />;

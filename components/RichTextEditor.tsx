@@ -6,6 +6,7 @@ import StarterKit from '@tiptap/starter-kit';
 import ImageExtension from '@tiptap/extension-image';
 import LinkExtension from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
+import Youtube from '@tiptap/extension-youtube';
 import { createClient } from '@/lib/supabase/client';
 
 const MAX_IMAGE_MB = 5;
@@ -30,7 +31,8 @@ export default function RichTextEditor({
       StarterKit,
       ImageExtension.configure({ HTMLAttributes: { class: 'rounded-xl' } }),
       LinkExtension.configure({ openOnClick: false, autolink: true }),
-      Placeholder.configure({ placeholder: 'Yazına buradan başla...' })
+      Placeholder.configure({ placeholder: 'Yazına buradan başla...' }),
+      Youtube.configure({ width: 640, height: 360, HTMLAttributes: { class: 'rounded-xl' } })
     ],
     content: value || '',
     immediatelyRender: false,
@@ -96,6 +98,16 @@ export default function RichTextEditor({
 
     editor.chain().focus().setImage({ src: publicUrlData.publicUrl }).run();
     setUploading(false);
+  }
+
+  function addYoutubeVideo() {
+    if (!editor) return;
+    const url = window.prompt('YouTube video linkini yapıştır:');
+    if (!url) return;
+    const ok = editor.commands.setYoutubeVideo({ src: url });
+    if (!ok) {
+      setError('Bu bir YouTube linki gibi görünmüyor. Videonun sayfasındaki linki (adres çubuğundaki) yapıştır.');
+    }
   }
 
   function setLink() {
@@ -173,6 +185,13 @@ export default function RichTextEditor({
           className="rounded-lg border border-border bg-cardAlt px-2.5 py-1.5 text-[12px] font-bold text-zinc-300 disabled:opacity-60"
         >
           {uploading ? 'Yükleniyor...' : '📷 Fotoğraf Ekle'}
+        </button>
+        <button
+          type="button"
+          onClick={addYoutubeVideo}
+          className="rounded-lg border border-border bg-cardAlt px-2.5 py-1.5 text-[12px] font-bold text-zinc-300"
+        >
+          ▶️ YouTube Ekle
         </button>
       </div>
 

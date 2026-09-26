@@ -20,7 +20,8 @@
     "@tiptap/starter-kit": "^2.6.6",
     "@tiptap/extension-image": "^2.6.6",
     "@tiptap/extension-link": "^2.6.6",
-    "@tiptap/extension-placeholder": "^2.6.6"
+    "@tiptap/extension-placeholder": "^2.6.6",
+    "@tiptap/extension-youtube": "^2.6.6"
   },
   "devDependencies": {
     "typescript": "^5.5.4",

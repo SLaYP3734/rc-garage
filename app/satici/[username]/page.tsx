@@ -17,7 +17,7 @@ async function getSellerData(username: string) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, username, avatar_url, created_at, is_verified')
+    .select('id, username, avatar_url, created_at, is_verified, is_content_creator')
     .eq('username', username)
     .maybeSingle();
 
@@ -147,6 +147,11 @@ export default async function SellerPage({ params }: { params: { username: strin
             {(profile as any).is_verified && (
               <span className="inline-flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/15 px-2 py-0.5 text-[11px] font-bold text-sky-400">
                 ✓ Doğrulanmış Satıcı
+              </span>
+            )}
+            {(profile as any).is_content_creator && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-violet-500/30 bg-violet-500/15 px-2 py-0.5 text-[11px] font-bold text-violet-400">
+                ✍️ İçerik Üretici
               </span>
             )}
             {badge && (

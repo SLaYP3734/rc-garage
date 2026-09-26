@@ -7,6 +7,8 @@ import { buildBlogSlug } from '@/lib/slug';
 import ImageUpload from '@/components/ImageUpload';
 import RichTextEditor from '@/components/RichTextEditor';
 
+const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
+
 type ExistingPost = {
   id: string;
   slug: string;
@@ -63,7 +65,26 @@ export default function BlogPostForm({ existingPost }: { existingPost?: Existing
         setError('Kaydedilemedi: ' + updateError.message);
         return;
       }
+
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+      const isAdmin = !!user && !!ADMIN_USER_ID && user.id === ADMIN_USER_ID;
+
+      if (isAdmin) {
+        router.push('/admin');
+      } else if (published) {
+        router.push(`/blog/${existingPost.slug}`);
+      } else {
+        router.push('/blog');
+      }
+      router.refresh();
+      return;
     } else {
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
       const slug = buildBlogSlug(title.trim());
       const { error: insertError } = await supabase.from('blog_posts').insert({
         slug,
@@ -71,7 +92,8 @@ export default function BlogPostForm({ existingPost }: { existingPost?: Existing
         excerpt: excerpt.trim() || null,
         cover_image_url: coverImageUrl || null,
         content,
-        published
+        published,
+        author_id: user?.id ?? null
       });
 
       setSaving(false);
@@ -80,10 +102,21 @@ export default function BlogPostForm({ existingPost }: { existingPost?: Existing
         setError('Kaydedilemedi: ' + insertError.message);
         return;
       }
-    }
 
-    router.push('/admin');
-    router.refresh();
+      // Admin her zaman panele döner; içerik üreticisi ise yazısını
+      // hemen görebileceği yere (yayınlandıysa yazının kendisine,
+      // taslaksa Blog listesine) yönlendirilir.
+      const isAdmin = !!user && !!ADMIN_USER_ID && user.id === ADMIN_USER_ID;
+      if (isAdmin) {
+        router.push('/admin');
+      } else if (published) {
+        router.push(`/blog/${slug}`);
+      } else {
+        router.push('/blog');
+      }
+      router.refresh();
+      return;
+    }
   }
 
   return (

@@ -36,7 +36,15 @@ export default async function BlogListPage() {
 
   return (
     <div className="px-4 py-6">
-      <h1 className="mb-1 text-xl font-extrabold">📖 Blog</h1>
+      <div className="mb-1 flex items-center justify-between">
+        <h1 className="text-xl font-extrabold">📖 Blog</h1>
+        <Link
+          href="/blog/yaz"
+          className="rounded-lg bg-accent/10 px-3 py-1.5 text-[12.5px] font-bold text-accent2"
+        >
+          + Yazı Ekle
+        </Link>
+      </div>
       <p className="mb-5 text-[13px] text-muted">RC araçlarla ilgili bakım rehberleri ve teknik yazılar.</p>
 
       {posts.length === 0 && (
