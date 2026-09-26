@@ -11,7 +11,6 @@ import VehicleTypeChips from '@/components/VehicleTypeChips';
 import HomeHero from '@/components/HomeHero';
 import TopHelpers from '@/components/TopHelpers';
 import TopSellers from '@/components/TopSellers';
-import FeaturedCarCard from '@/components/FeaturedCarCard';
 import NewItemsBanner from '@/components/NewItemsBanner';
 import ContactButton from '@/components/ContactButton';
 import HomeStats from '@/components/HomeStats';
@@ -183,10 +182,10 @@ export default async function HomePage({
     author_username: row.profiles?.username ?? null
   }));
 
-  // Haftanın Öne Çıkanları: tek bir kayan şeritte İlanlar + Sorular + Galeri
-  // (Haftanın Aracı) karışık şekilde sıralanıyor — birbirini takip eden
-  // ilan/soru/ilan/soru... düzeni, en başta da Haftanın Aracı.
-  const hasFeedContent = recentListings.length > 0 || !!featuredCar;
+  // Haftanın Öne Çıkanları: tek bir kayan şeritte sadece İlanlar (Al-Sat).
+  // Haftanın Aracı artık burada değil, aşağıdaki turuncu vitrin kutusunda
+  // (WeeklyShowcase) diğer öne çıkanlarla birlikte alt alta gösteriliyor.
+  const hasFeedContent = recentListings.length > 0;
 
   return (
     <div>
@@ -235,7 +234,6 @@ export default async function HomePage({
           <NewItemsBanner table="problems" />
 
           <div className="scrollbar-none flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-1">
-            {featuredCar && <FeaturedCarCard car={featuredCar} />}
             {recentListings.map((listing) => (
               <ListingCarouselCard key={listing.id} listing={listing} />
             ))}
@@ -272,7 +270,12 @@ export default async function HomePage({
       <CategoryChips basePath="/" />
       <CategoryFollowButton />
 
-      <WeeklyShowcase bestAnswer={bestAnswer} bestListing={bestListing} bestBlogPost={bestBlogPost} />
+      <WeeklyShowcase
+        bestAnswer={bestAnswer}
+        bestListing={bestListing}
+        featuredCar={featuredCar}
+        bestBlogPost={bestBlogPost}
+      />
 
       <RandomProblemsStrip />
 
