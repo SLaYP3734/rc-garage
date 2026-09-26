@@ -25,7 +25,7 @@ async function getListing(slug: string) {
   const { data: listing } = await supabase
     .from('listings')
     .select(
-      'id, user_id, title, brand, model, category, condition, price, description, image_url, status, slug, created_at, min_offer_amount, profiles(username, avatar_url, is_verified)'
+      'id, user_id, title, brand, model, category, condition, price, description, image_url, image_urls, status, slug, created_at, min_offer_amount, profiles(username, avatar_url, is_verified)'
     )
     .eq('slug', slug)
     .single();
@@ -71,6 +71,12 @@ export default async function ListingPage({ params }: { params: { slug: string }
   } = await supabase.auth.getUser();
 
   const categoryLabel = LISTING_CATEGORIES.find((c) => c.value === listing.category)?.label;
+  const galleryImages: string[] =
+    (listing as any).image_urls && (listing as any).image_urls.length > 0
+      ? (listing as any).image_urls
+      : listing.image_url
+      ? [listing.image_url]
+      : [];
   const isOwner = user?.id === listing.user_id;
   const sellerUsername = (listing as any).profiles?.username as string | null;
   const sellerAvatarUrl = (listing as any).profiles?.avatar_url as string | null;
@@ -209,9 +215,21 @@ export default async function ListingPage({ params }: { params: { slug: string }
         {!isOwner && <FavoriteButton listingId={listing.id} />}
       </div>
 
-      {listing.image_url && (
-        <div className="relative mt-4 h-[220px] w-full overflow-hidden rounded-2xl border border-border">
-          <Image src={listing.image_url} alt={listing.title} fill className="object-cover" />
+      {galleryImages.length > 0 && (
+        <div className="scrollbar-none mt-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto">
+          {galleryImages.map((url, index) => (
+            <div
+              key={url}
+              className="relative h-[220px] w-full shrink-0 snap-center overflow-hidden rounded-2xl border border-border"
+            >
+              <Image src={url} alt={`${listing.title} — fotoğraf ${index + 1}`} fill className="object-cover" />
+              {galleryImages.length > 1 && (
+                <span className="absolute bottom-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[11px] font-semibold text-white">
+                  {index + 1}/{galleryImages.length}
+                </span>
+              )}
+            </div>
+          ))}
         </div>
       )}
 

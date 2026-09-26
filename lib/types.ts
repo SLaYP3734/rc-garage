@@ -88,9 +88,11 @@ export type Listing = {
   price: number | null;
   description: string;
   image_url: string | null;
+  image_urls?: string[] | null;
   status: ListingStatus;
   slug: string;
   created_at: string;
+  is_featured?: boolean;
   author_username?: string | null;
 };
 

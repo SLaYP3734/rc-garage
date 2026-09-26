@@ -7,7 +7,7 @@ import { buildListingSlug } from '@/lib/slug';
 import { LISTING_CATEGORIES, ListingCondition, VEHICLE_TYPES, VehicleType } from '@/lib/types';
 import { getCurrentUser } from '@/lib/authUser';
 import AuthModal from '@/components/AuthModal';
-import ImageUpload from '@/components/ImageUpload';
+import MultiImageUpload from '@/components/MultiImageUpload';
 
 export default function NewListingPage() {
   const supabase = createClient();
@@ -25,7 +25,7 @@ export default function NewListingPage() {
   const [price, setPrice] = useState('');
   const [minOfferAmount, setMinOfferAmount] = useState('');
   const [description, setDescription] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -71,7 +71,8 @@ export default function NewListingPage() {
         price: parsedPrice,
         min_offer_amount: parsedMinOffer,
         description: description.trim(),
-        image_url: imageUrl.trim() || null,
+        image_url: imageUrls[0] ?? null,
+        image_urls: imageUrls,
         slug,
         status: 'active'
       })
@@ -178,7 +179,7 @@ export default function NewListingPage() {
           className="w-full resize-y rounded-xl border border-border bg-cardAlt px-3.5 py-3 text-sm outline-none focus:border-accent"
         />
 
-        <ImageUpload value={imageUrl} onChange={setImageUrl} />
+        <MultiImageUpload value={imageUrls} onChange={setImageUrls} max={5} />
 
         <button
           type="submit"

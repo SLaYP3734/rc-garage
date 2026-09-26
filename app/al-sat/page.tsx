@@ -25,9 +25,10 @@ export default async function AlSatPage({
   let query = supabase
     .from('listings')
     .select(
-      'id, user_id, title, brand, model, category, vehicle_type, condition, price, description, image_url, status, slug, created_at, profiles(username)'
+      'id, user_id, title, brand, model, category, vehicle_type, condition, price, description, image_url, image_urls, status, slug, created_at, is_featured, profiles(username)'
     )
     .order('status', { ascending: true })
+    .order('is_featured', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(30);
 

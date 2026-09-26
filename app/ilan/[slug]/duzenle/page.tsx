@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { LISTING_CATEGORIES, ListingCondition, VEHICLE_TYPES, VehicleType } from '@/lib/types';
 import { getCurrentUser } from '@/lib/authUser';
-import ImageUpload from '@/components/ImageUpload';
+import MultiImageUpload from '@/components/MultiImageUpload';
 
 // Var olan bir ilanı düzenleme sayfası. Sadece ilanın sahibi girebilir
 // (hem burada hem de veritabanı tarafında "listings_update_own" RLS
@@ -29,7 +29,7 @@ export default function EditListingPage() {
   const [price, setPrice] = useState('');
   const [minOfferAmount, setMinOfferAmount] = useState('');
   const [description, setDescription] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -42,7 +42,7 @@ export default function EditListingPage() {
       const { data: listing } = await supabase
         .from('listings')
         .select(
-          'id, user_id, title, brand, model, category, vehicle_type, condition, price, min_offer_amount, description, image_url'
+          'id, user_id, title, brand, model, category, vehicle_type, condition, price, min_offer_amount, description, image_url, image_urls'
         )
         .eq('slug', params.slug)
         .single();
@@ -65,7 +65,15 @@ export default function EditListingPage() {
       setPrice(listing.price != null ? String(listing.price) : '');
       setMinOfferAmount(listing.min_offer_amount != null ? String(listing.min_offer_amount) : '');
       setDescription(listing.description ?? '');
-      setImageUrl(listing.image_url ?? '');
+      // Eski ilanlarda "image_urls" boş olabilir (bu özellikten önce
+      // eklenmiş), o durumda tekli "image_url"den geriye dönük doldur.
+      const existingUrls =
+        listing.image_urls && listing.image_urls.length > 0
+          ? listing.image_urls
+          : listing.image_url
+          ? [listing.image_url]
+          : [];
+      setImageUrls(existingUrls);
       setLoading(false);
     }
 
@@ -101,7 +109,8 @@ export default function EditListingPage() {
         price: parsedPrice,
         min_offer_amount: parsedMinOffer,
         description: description.trim(),
-        image_url: imageUrl.trim() || null
+        image_url: imageUrls[0] ?? null,
+        image_urls: imageUrls
       })
       .eq('id', listingId);
 
@@ -209,7 +218,7 @@ export default function EditListingPage() {
           className="w-full resize-y rounded-xl border border-border bg-cardAlt px-3.5 py-3 text-sm outline-none focus:border-accent"
         />
 
-        <ImageUpload value={imageUrl} onChange={setImageUrl} />
+        <MultiImageUpload value={imageUrls} onChange={setImageUrls} max={5} />
 
         <button
           type="submit"

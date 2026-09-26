@@ -28,7 +28,7 @@ async function getBrandData(slug: string) {
     supabase
       .from('listings')
       .select(
-        'id, user_id, title, brand, model, category, vehicle_type, condition, price, description, image_url, status, slug, created_at, profiles(username)'
+        'id, user_id, title, brand, model, category, vehicle_type, condition, price, description, image_url, image_urls, status, slug, created_at, profiles(username)'
       )
       .ilike('brand', searchText)
       .order('created_at', { ascending: false })

@@ -22,7 +22,11 @@ export default function ListingCard({ listing }: { listing: Listing }) {
   return (
     <div
       onClick={() => router.push(`/ilan/${listing.slug}`)}
-      className="group relative mx-3 mb-2.5 flex cursor-pointer gap-3 overflow-hidden rounded-2xl border border-border/70 bg-card/60 px-3.5 py-3.5 transition hover:-translate-y-0.5 hover:border-border hover:bg-cardAlt/70 hover:shadow-lg hover:shadow-black/30"
+      className={`group relative mx-3 mb-2.5 flex cursor-pointer gap-3 overflow-hidden rounded-2xl border px-3.5 py-3.5 transition hover:-translate-y-0.5 hover:bg-cardAlt/70 hover:shadow-lg hover:shadow-black/30 ${
+        listing.is_featured
+          ? 'border-accent/50 bg-accent/[0.06] hover:border-accent'
+          : 'border-border/70 bg-card/60 hover:border-border'
+      }`}
     >
       <span
         className="absolute left-0 top-0 h-full w-[3px] opacity-90 transition-all group-hover:w-[4px]"
@@ -32,6 +36,11 @@ export default function ListingCard({ listing }: { listing: Listing }) {
 
       <div className="min-w-0 flex-1 pl-1.5">
         <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+          {listing.is_featured && (
+            <span className="rounded-md border border-accent/40 bg-accent/15 px-2 py-0.5 text-[11px] font-bold text-accent2">
+              ⭐ Öne Çıkan
+            </span>
+          )}
           {listing.brand && (
             <span
               className="rounded-md px-2 py-0.5 text-[11px] font-semibold"
@@ -90,6 +99,11 @@ export default function ListingCard({ listing }: { listing: Listing }) {
             sizes="76px"
             className="object-cover transition group-hover:scale-105"
           />
+          {listing.image_urls && listing.image_urls.length > 1 && (
+            <span className="absolute bottom-1 right-1 rounded-full bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">
+              +{listing.image_urls.length - 1}
+            </span>
+          )}
         </div>
       )}
     </div>

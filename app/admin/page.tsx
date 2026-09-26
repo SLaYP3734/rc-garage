@@ -14,6 +14,7 @@ type Row = {
   model?: string | null;
   created_at: string;
   author_username?: string | null;
+  is_featured?: boolean;
 };
 
 type UserRow = {
@@ -223,9 +224,13 @@ export default function AdminPage() {
 
   async function loadContent() {
     setLoading(true);
+    const selectCols =
+      tab === 'listings'
+        ? 'id, title, brand, model, user_id, created_at, is_featured'
+        : 'id, title, brand, model, user_id, created_at';
     const { data } = await supabase
       .from(tab)
-      .select('id, title, brand, model, user_id, created_at')
+      .select(selectCols)
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -305,6 +310,20 @@ export default function AdminPage() {
     }
 
     setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, is_verified: next } : u)));
+  }
+
+  async function toggleFeatured(row: Row) {
+    const next = !row.is_featured;
+    setBusyId(row.id);
+    const { error } = await supabase.rpc('admin_set_listing_featured', { target_id: row.id, featured: next });
+    setBusyId(null);
+
+    if (error) {
+      alert('İşlem yapılamadı: ' + error.message);
+      return;
+    }
+
+    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, is_featured: next } : r)));
   }
 
   async function deleteUser(user: UserRow) {
@@ -709,13 +728,28 @@ export default function AdminPage() {
                   </p>
                   <p className="text-[11px] text-mutedDim">{row.author_username || 'RC Atölyesi üyesi'}</p>
                 </div>
-                <button
-                  onClick={() => handleDeleteContent(row.id)}
-                  disabled={busyId === row.id}
-                  className="shrink-0 rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-[11px] font-bold text-red-400 disabled:opacity-50"
-                >
-                  {busyId === row.id ? '...' : '🗑️ Sil'}
-                </button>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {tab === 'listings' && (
+                    <button
+                      onClick={() => toggleFeatured(row)}
+                      disabled={busyId === row.id}
+                      className={`rounded-lg border px-2.5 py-1.5 text-[11px] font-bold disabled:opacity-50 ${
+                        row.is_featured
+                          ? 'border-accent/50 bg-accent/15 text-accent2'
+                          : 'border-border text-muted'
+                      }`}
+                    >
+                      {busyId === row.id ? '...' : row.is_featured ? '⭐ Öne Çıkan' : '☆ Öne Çıkar'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDeleteContent(row.id)}
+                    disabled={busyId === row.id}
+                    className="rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-[11px] font-bold text-red-400 disabled:opacity-50"
+                  >
+                    {busyId === row.id ? '...' : '🗑️ Sil'}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
