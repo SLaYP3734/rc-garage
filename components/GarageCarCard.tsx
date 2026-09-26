@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { brandColor } from '@/lib/brand';
 import { brandSlug } from '@/lib/slug';
 import { GarageCar } from '@/lib/types';
+
+const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
 
 export default function GarageCarCard({
   car,
@@ -16,10 +19,13 @@ export default function GarageCarCard({
   showOwner?: boolean;
 }) {
   const supabase = createClient();
+  const router = useRouter();
   const [likeCount, setLikeCount] = useState(car.like_count);
   const [liked, setLiked] = useState(false);
   const [meId, setMeId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleted, setDeleted] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,6 +49,25 @@ export default function GarageCarCard({
     };
   }, [supabase, car.id]);
 
+  const canDelete = !!meId && (meId === car.user_id || (!!ADMIN_USER_ID && meId === ADMIN_USER_ID));
+
+  async function handleDelete() {
+    if (!canDelete || deleting) return;
+    if (!confirm('Bu aracı galeriden silmek istediğine emin misin? Bu işlem geri alınamaz.')) return;
+
+    setDeleting(true);
+    const { error } = await supabase.from('garage_cars').delete().eq('id', car.id);
+    setDeleting(false);
+
+    if (error) {
+      alert('Silinemedi: ' + error.message);
+      return;
+    }
+
+    setDeleted(true);
+    router.refresh();
+  }
+
   async function toggleLike() {
     if (!meId || busy) return;
     setBusy(true);
@@ -59,6 +84,8 @@ export default function GarageCarCard({
 
     setBusy(false);
   }
+
+  if (deleted) return null;
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card">
@@ -100,17 +127,29 @@ export default function GarageCarCard({
 
         {car.notes && <p className="mt-2 text-[13px] text-zinc-300">{car.notes}</p>}
 
-        <button
-          onClick={toggleLike}
-          disabled={!meId || busy}
-          className={`mt-3 flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-semibold transition ${
-            liked
-              ? 'border-accent/40 bg-accent/15 text-accent2'
-              : 'border-border bg-cardAlt text-muted'
-          } disabled:opacity-70`}
-        >
-          {liked ? '❤️' : '🤍'} {likeCount}
-        </button>
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            onClick={toggleLike}
+            disabled={!meId || busy}
+            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-semibold transition ${
+              liked
+                ? 'border-accent/40 bg-accent/15 text-accent2'
+                : 'border-border bg-cardAlt text-muted'
+            } disabled:opacity-70`}
+          >
+            {liked ? '❤️' : '🤍'} {likeCount}
+          </button>
+
+          {canDelete && (
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="ml-auto rounded-full border border-border bg-cardAlt px-2.5 py-1 text-[12px] font-semibold text-muted transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 disabled:opacity-60"
+            >
+              {deleting ? 'Siliniyor...' : '🗑️ Sil'}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
