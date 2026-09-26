@@ -27,7 +27,12 @@ export const metadata: Metadata = {
     siteName: 'RC Atölyesi'
   },
   verification: {
-    google: 'JJ6XdAjqZQ4HY3WrB5BlC0x0eDqWMVq_mCTA_90H40I'
+    // İki ayrı Google Search Console kaydı doğrulanıyor: ilki eski Vercel
+    // adresi (rc-garage-three.vercel.app), ikincisi yeni domain
+    // (rcatolyesi.com). İkisi de aynı anda geçerli kalsın diye ikisini de
+    // tutuyoruz — Next.js bu alana birden fazla kod (dizi) verilmesine izin
+    // veriyor, sayfada iki ayrı <meta name="google-site-verification"> etiketi olarak çıkıyor.
+    google: ['JJ6XdAjqZQ4HY3WrB5BlC0x0eDqWMVq_mCTA_90H40I', 'CWXzijgWLgxyOMK5OQqD3m--njPyir0hnPcxTp7MoD0']
   },
   appleWebApp: {
     capable: true,
