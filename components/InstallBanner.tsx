@@ -6,7 +6,11 @@ import { pushSupported, isStandalone, requestAndSubscribe, VAPID_PUBLIC_KEY } fr
 import ModalPortal from '@/components/ModalPortal';
 
 const DISMISS_KEY = 'rc-install-banner-dismissed-at';
-const DISMISS_DAYS = 1;
+const DISMISS_MINUTES = 30;
+// İnce şerit fark edilmiyordu, bu yüzden artık ortada açılan bir pencere
+// (modal) olarak gösteriyoruz — sayfa yüklendikten kısa bir süre sonra
+// otomatik açılıyor ki ilk anda "araya giren bir şey" gibi hissettirmesin.
+const AUTO_OPEN_DELAY_MS = 900;
 
 function isDismissedRecently() {
   try {
@@ -14,8 +18,8 @@ function isDismissedRecently() {
     if (!raw) return false;
     const dismissedAt = Number(raw);
     if (!dismissedAt) return false;
-    const daysSince = (Date.now() - dismissedAt) / (1000 * 60 * 60 * 24);
-    return daysSince < DISMISS_DAYS;
+    const minutesSince = (Date.now() - dismissedAt) / (1000 * 60);
+    return minutesSince < DISMISS_MINUTES;
   } catch {
     return false;
   }
@@ -31,14 +35,16 @@ function markDismissed() {
 
 type Mode = 'none' | 'ios-install' | 'android-install' | 'enable-notifications';
 
-// Siteye linkle gelen herkese, telefonuna göre en pratik adımı gösteren
-// ince bir şerit: iPhone'da "Ana Ekrana Ekle" talimatı, Android'de
-// tek dokunuşla kurulum, uygulama zaten kuruluysa da bildirimleri açma
-// hatırlatması. Kapatılırsa 7 gün boyunca tekrar çıkmaz.
+// Siteye linkle gelen herkese, telefonuna göre en pratik adımı gösteren bir
+// açılır pencere: iPhone'da "Ana Ekrana Ekle" talimatı, Android'de tek
+// dokunuşla kurulum, uygulama zaten kuruluysa da bildirimleri açma
+// hatırlatması. Eskiden ince bir şerit olarak üstte duruyordu ama fark
+// edilmiyordu — artık sayfa açılınca ortada beliren bir pencere.
+// Kapatılırsa 30 dakika boyunca tekrar çıkmaz.
 export default function InstallBanner() {
   const supabase = createClient();
   const [mode, setMode] = useState<Mode>('none');
-  const [showIosModal, setShowIosModal] = useState(false);
+  const [open, setOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [busy, setBusy] = useState(false);
 
@@ -55,13 +61,16 @@ export default function InstallBanner() {
       // Uygulama zaten kurulu — sadece bildirimler kapalıysa hatırlat.
       if (pushSupported() && VAPID_PUBLIC_KEY && Notification.permission === 'default') {
         setMode('enable-notifications');
+        const timer = window.setTimeout(() => setOpen(true), AUTO_OPEN_DELAY_MS);
+        return () => window.clearTimeout(timer);
       }
       return;
     }
 
     if (isIos) {
       setMode('ios-install');
-      return;
+      const timer = window.setTimeout(() => setOpen(true), AUTO_OPEN_DELAY_MS);
+      return () => window.clearTimeout(timer);
     }
 
     if (isAndroid) {
@@ -69,6 +78,7 @@ export default function InstallBanner() {
         e.preventDefault();
         setDeferredPrompt(e);
         setMode('android-install');
+        window.setTimeout(() => setOpen(true), AUTO_OPEN_DELAY_MS);
       };
       window.addEventListener('beforeinstallprompt', handler);
       return () => window.removeEventListener('beforeinstallprompt', handler);
@@ -77,6 +87,7 @@ export default function InstallBanner() {
 
   function dismiss() {
     markDismissed();
+    setOpen(false);
     setMode('none');
   }
 
@@ -85,6 +96,7 @@ export default function InstallBanner() {
     deferredPrompt.prompt();
     await deferredPrompt.userChoice.catch(() => null);
     setDeferredPrompt(null);
+    setOpen(false);
     setMode('none');
   }
 
@@ -96,76 +108,36 @@ export default function InstallBanner() {
       console.error(err);
     } finally {
       setBusy(false);
+      setOpen(false);
       setMode('none');
     }
   }
 
-  if (mode === 'none') return null;
+  if (mode === 'none' || !open) return null;
 
   return (
-    <>
-      <div className="flex items-center gap-2.5 border-b border-border bg-cardAlt px-4 py-2.5 text-sm">
-        {mode === 'ios-install' && (
-          <>
-            <span className="text-lg">📲</span>
-            <span className="flex-1 text-zinc-300">RC Atölyesi&apos;ni uygulama gibi kullan</span>
-            <button
-              onClick={() => setShowIosModal(true)}
-              className="whitespace-nowrap rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-black"
-            >
-              Nasıl?
-            </button>
-          </>
-        )}
-
-        {mode === 'android-install' && (
-          <>
-            <span className="text-lg">⬇️</span>
-            <span className="flex-1 text-zinc-300">RC Atölyesi&apos;ni uygulama olarak yükle</span>
-            <button
-              onClick={handleAndroidInstall}
-              className="whitespace-nowrap rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-black"
-            >
-              Yükle
-            </button>
-          </>
-        )}
-
-        {mode === 'enable-notifications' && (
-          <>
-            <span className="text-lg">🔔</span>
-            <span className="flex-1 text-zinc-300">Mesaj ve cevap geldiğinde haberin olsun</span>
-            <button
-              onClick={handleEnableNotifications}
-              disabled={busy}
-              className="whitespace-nowrap rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-black disabled:opacity-60"
-            >
-              {busy ? 'Açılıyor...' : 'Bildirimleri Aç'}
-            </button>
-          </>
-        )}
-
-        <button onClick={dismiss} aria-label="Kapat" className="px-1 text-lg text-muted">
-          ✕
-        </button>
-      </div>
-
-      {showIosModal && (
-        <ModalPortal>
-          <div
-            className="fixed inset-0 z-[2500] flex items-center justify-center bg-black/75 p-5 backdrop-blur-sm"
-            onClick={() => setShowIosModal(false)}
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="max-h-[90dvh] w-full max-w-[380px] overflow-y-auto rounded-[22px] border border-border bg-card p-5"
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-bold">Ana Ekrana Ekle</h3>
-                <button onClick={() => setShowIosModal(false)} className="text-xl text-muted">
+    <ModalPortal>
+      <div
+        className="fixed inset-0 z-[2500] flex items-center justify-center bg-black/75 p-5 backdrop-blur-sm"
+        onClick={dismiss}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="max-h-[90dvh] w-full max-w-[380px] overflow-y-auto rounded-[22px] border border-border bg-card p-5"
+        >
+          {mode === 'ios-install' && (
+            <>
+              <div className="mb-1 flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-lg font-bold">
+                  <span>📲</span> RC Atölyesi&apos;ni Uygulama Gibi Kullan
+                </h3>
+                <button onClick={dismiss} aria-label="Kapat" className="text-xl text-muted">
                   ✕
                 </button>
               </div>
+              <p className="mb-4 text-[13px] text-muted">
+                Ana ekranına eklersen tarayıcı açmadan, tek dokunuşla girip bildirim alabilirsin.
+              </p>
 
               <ol className="space-y-4 text-sm text-zinc-300">
                 <li className="flex gap-3">
@@ -209,15 +181,70 @@ export default function InstallBanner() {
               </ol>
 
               <button
-                onClick={() => setShowIosModal(false)}
+                onClick={dismiss}
                 className="mt-5 w-full rounded-xl bg-accent py-3 text-sm font-bold text-black"
               >
                 Anladım
               </button>
-            </div>
-          </div>
-        </ModalPortal>
-      )}
-    </>
+            </>
+          )}
+
+          {mode === 'android-install' && (
+            <>
+              <div className="mb-1 flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-lg font-bold">
+                  <span>⬇️</span> RC Atölyesi&apos;ni Uygulama Olarak Yükle
+                </h3>
+                <button onClick={dismiss} aria-label="Kapat" className="text-xl text-muted">
+                  ✕
+                </button>
+              </div>
+              <p className="mb-5 text-[13px] text-muted">
+                Ana ekranına eklersen tarayıcı açmadan, tek dokunuşla girip bildirim alabilirsin. Aşağıdaki
+                düğmeyle hemen kurabilirsin.
+              </p>
+
+              <button
+                onClick={handleAndroidInstall}
+                className="w-full rounded-xl bg-accent py-3 text-sm font-bold text-black"
+              >
+                Şimdi Yükle
+              </button>
+              <button onClick={dismiss} className="mt-2.5 w-full py-2 text-sm font-semibold text-muted">
+                Daha Sonra
+              </button>
+            </>
+          )}
+
+          {mode === 'enable-notifications' && (
+            <>
+              <div className="mb-1 flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-lg font-bold">
+                  <span>🔔</span> Bildirimleri Aç
+                </h3>
+                <button onClick={dismiss} aria-label="Kapat" className="text-xl text-muted">
+                  ✕
+                </button>
+              </div>
+              <p className="mb-5 text-[13px] text-muted">
+                Sorularına cevap geldiğinde, mesaj aldığında ya da ilanınla ilgili bir hareket olduğunda haberin
+                olsun.
+              </p>
+
+              <button
+                onClick={handleEnableNotifications}
+                disabled={busy}
+                className="w-full rounded-xl bg-accent py-3 text-sm font-bold text-black disabled:opacity-60"
+              >
+                {busy ? 'Açılıyor...' : 'Bildirimleri Aç'}
+              </button>
+              <button onClick={dismiss} className="mt-2.5 w-full py-2 text-sm font-semibold text-muted">
+                Daha Sonra
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </ModalPortal>
   );
 }
