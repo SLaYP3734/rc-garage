@@ -4,6 +4,7 @@ export type ProblemStatus = 'open' | 'discussing' | 'solved';
 // (Motor, ESC...) ayrı bir boyut, sorun/ilan/garaj araçlarının hepsinde ortak.
 export const VEHICLE_TYPES = [
   { value: 'araba', label: 'Araba', icon: '🚗' },
+  { value: 'is-makinasi', label: 'İş Makinası', icon: '🚜' },
   { value: 'drone', label: 'Drone', icon: '🛸' },
   { value: 'ucak', label: 'Uçak', icon: '✈️' },
   { value: 'helikopter', label: 'Helikopter', icon: '🚁' },

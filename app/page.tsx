@@ -3,15 +3,15 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { Problem, Listing } from '@/lib/types';
 import { timeAgo } from '@/lib/time';
-import ProblemCard from '@/components/ProblemCard';
-import ListingCard from '@/components/ListingCard';
+import ListingCarouselCard from '@/components/ListingCarouselCard';
+import ProblemCarouselCard from '@/components/ProblemCarouselCard';
 import SearchBox from '@/components/SearchBox';
 import CategoryChips from '@/components/CategoryChips';
 import VehicleTypeChips from '@/components/VehicleTypeChips';
 import HomeHero from '@/components/HomeHero';
 import TopHelpers from '@/components/TopHelpers';
 import TopSellers from '@/components/TopSellers';
-import FeaturedCar from '@/components/FeaturedCar';
+import FeaturedCarCard from '@/components/FeaturedCarCard';
 import NewItemsBanner from '@/components/NewItemsBanner';
 import ContactButton from '@/components/ContactButton';
 import HomeStats from '@/components/HomeStats';
@@ -169,7 +169,7 @@ export default async function HomePage({
     <div>
       <HomeHero />
 
-      {recentListings.length > 0 && (
+      {(recentListings.length > 0 || featuredCar) && (
         <section className="pt-2">
           <div className="flex items-center justify-between px-4 pb-2">
             <h2 className="text-[15px] font-bold text-zinc-300">🛒 Al-Sat'tan</h2>
@@ -177,9 +177,10 @@ export default async function HomePage({
               Tümünü Gör
             </Link>
           </div>
-          <div>
+          <div className="scrollbar-none flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-4 pb-1">
+            {featuredCar && <FeaturedCarCard car={featuredCar} />}
             {recentListings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
+              <ListingCarouselCard key={listing.id} listing={listing} />
             ))}
           </div>
         </section>
@@ -233,11 +234,13 @@ export default async function HomePage({
         </div>
       )}
 
-      <div>
-        {problems.map((problem) => (
-          <ProblemCard key={problem.id} problem={problem} />
-        ))}
-      </div>
+      {problems.length > 0 && (
+        <div className="scrollbar-none flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-4 pb-1">
+          {problems.map((problem) => (
+            <ProblemCarouselCard key={problem.id} problem={problem} />
+          ))}
+        </div>
+      )}
 
       {recentBlogPosts && recentBlogPosts.length > 0 && (
         <section className="px-4 py-3">
@@ -272,7 +275,6 @@ export default async function HomePage({
 
       <TopHelpers helpers={realTopHelpers} />
       <HomeStats stats={stats} />
-      {featuredCar && <FeaturedCar car={featuredCar} />}
       <ContactButton />
     </div>
   );
