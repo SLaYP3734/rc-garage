@@ -216,20 +216,22 @@ export default async function ListingPage({ params }: { params: { slug: string }
       </div>
 
       {galleryImages.length > 0 && (
-        <div className="scrollbar-none mt-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto">
-          {galleryImages.map((url, index) => (
-            <div
-              key={url}
-              className="relative h-[220px] w-full shrink-0 snap-center overflow-hidden rounded-2xl border border-border"
-            >
-              <Image src={url} alt={`${listing.title} — fotoğraf ${index + 1}`} fill className="object-cover" />
-              {galleryImages.length > 1 && (
-                <span className="absolute bottom-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[11px] font-semibold text-white">
-                  {index + 1}/{galleryImages.length}
-                </span>
-              )}
-            </div>
-          ))}
+        <div className="mx-auto mt-4 w-full max-w-[440px]">
+          <div className="scrollbar-none flex snap-x snap-mandatory gap-2.5 overflow-x-auto">
+            {galleryImages.map((url, index) => (
+              <div
+                key={url}
+                className="relative aspect-[4/3] w-full shrink-0 snap-center overflow-hidden rounded-2xl border border-border"
+              >
+                <Image src={url} alt={`${listing.title} — fotoğraf ${index + 1}`} fill className="object-cover" />
+                {galleryImages.length > 1 && (
+                  <span className="absolute bottom-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-[11px] font-semibold text-white">
+                    {index + 1}/{galleryImages.length}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

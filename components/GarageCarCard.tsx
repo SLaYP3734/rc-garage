@@ -63,7 +63,7 @@ export default function GarageCarCard({
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card">
       {car.image_url && (
-        <div className="relative h-[160px] w-full">
+        <div className="relative aspect-[4/3] w-full">
           <Image src={car.image_url} alt={`${car.brand} ${car.model}`} fill className="object-cover" />
         </div>
       )}
