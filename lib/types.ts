@@ -93,6 +93,7 @@ export type Listing = {
   slug: string;
   created_at: string;
   is_featured?: boolean;
+  views?: number;
   author_username?: string | null;
 };
 

@@ -25,7 +25,7 @@ async function getListing(slug: string) {
   const { data: listing } = await supabase
     .from('listings')
     .select(
-      'id, user_id, title, brand, model, category, condition, price, description, image_url, image_urls, status, slug, created_at, min_offer_amount, profiles(username, avatar_url, is_verified)'
+      'id, user_id, title, brand, model, category, condition, price, description, image_url, image_urls, status, slug, created_at, min_offer_amount, views, profiles(username, avatar_url, is_verified)'
     )
     .eq('slug', slug)
     .single();
@@ -78,6 +78,19 @@ export default async function ListingPage({ params }: { params: { slug: string }
       ? [listing.image_url]
       : [];
   const isOwner = user?.id === listing.user_id;
+
+  // Sahibi kendi ilanına baktığında sayaç artmasın diye sadece
+  // başkaları görüntülediğinde çalışıyor. Vercel'in sunucusuz ortamında
+  // "sonucu beklemeden" tetiklenen istekler sayfa bitince yarıda
+  // kesilebildiği için burada bilerek await ediyoruz (tek satırlık bir
+  // güncelleme olduğu için sayfayı fark edilir şekilde yavaşlatmaz).
+  if (!isOwner) {
+    try {
+      await supabase.rpc('increment_listing_views', { target_id: listing.id });
+    } catch {
+      // sayaç artmazsa bile ilan sayfası açılmaya devam etsin
+    }
+  }
   const sellerUsername = (listing as any).profiles?.username as string | null;
   const sellerAvatarUrl = (listing as any).profiles?.avatar_url as string | null;
   const sellerIsVerified = (listing as any).profiles?.is_verified as boolean | null;
@@ -160,6 +173,8 @@ export default async function ListingPage({ params }: { params: { slug: string }
         )}
         <span>·</span>
         <span>{timeAgo(listing.created_at)}</span>
+        <span>·</span>
+        <span>👁 {listing.views ?? 0} görüntülenme</span>
         {!isOwner && user && (
           <>
             <span>·</span>
