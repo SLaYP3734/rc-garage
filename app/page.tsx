@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server';
 import { Problem, Listing } from '@/lib/types';
 import { timeAgo } from '@/lib/time';
 import ListingCarouselCard from '@/components/ListingCarouselCard';
-import ProblemCarouselCard from '@/components/ProblemCarouselCard';
 import SearchBox from '@/components/SearchBox';
 import CategoryChips from '@/components/CategoryChips';
 import VehicleTypeChips from '@/components/VehicleTypeChips';
@@ -168,18 +167,7 @@ export default async function HomePage({
   // Haftanın Öne Çıkanları: tek bir kayan şeritte İlanlar + Sorular + Galeri
   // (Haftanın Aracı) karışık şekilde sıralanıyor — birbirini takip eden
   // ilan/soru/ilan/soru... düzeni, en başta da Haftanın Aracı.
-  type FeedItem =
-    | { kind: 'listing'; data: Listing }
-    | { kind: 'problem'; data: Problem };
-
-  const feedItems: FeedItem[] = [];
-  const feedLength = Math.max(recentListings.length, problems.length);
-  for (let i = 0; i < feedLength; i++) {
-    if (recentListings[i]) feedItems.push({ kind: 'listing', data: recentListings[i] });
-    if (problems[i]) feedItems.push({ kind: 'problem', data: problems[i] });
-  }
-
-  const hasFeedContent = feedItems.length > 0 || !!featuredCar;
+  const hasFeedContent = recentListings.length > 0 || !!featuredCar;
 
   return (
     <div>
@@ -227,15 +215,11 @@ export default async function HomePage({
 
           <NewItemsBanner table="problems" />
 
-          <div className="scrollbar-none flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-4 pb-1">
+          <div className="scrollbar-none flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-1">
             {featuredCar && <FeaturedCarCard car={featuredCar} />}
-            {feedItems.map((item) =>
-              item.kind === 'listing' ? (
-                <ListingCarouselCard key={`l-${item.data.id}`} listing={item.data} />
-              ) : (
-                <ProblemCarouselCard key={`p-${item.data.id}`} problem={item.data} />
-              )
-            )}
+            {recentListings.map((listing) => (
+              <ListingCarouselCard key={listing.id} listing={listing} />
+            ))}
           </div>
         </section>
       )}
