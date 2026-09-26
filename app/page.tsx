@@ -165,52 +165,80 @@ export default async function HomePage({
     author_username: row.profiles?.username ?? null
   }));
 
+  // Haftanın Öne Çıkanları: tek bir kayan şeritte İlanlar + Sorular + Galeri
+  // (Haftanın Aracı) karışık şekilde sıralanıyor — birbirini takip eden
+  // ilan/soru/ilan/soru... düzeni, en başta da Haftanın Aracı.
+  type FeedItem =
+    | { kind: 'listing'; data: Listing }
+    | { kind: 'problem'; data: Problem };
+
+  const feedItems: FeedItem[] = [];
+  const feedLength = Math.max(recentListings.length, problems.length);
+  for (let i = 0; i < feedLength; i++) {
+    if (recentListings[i]) feedItems.push({ kind: 'listing', data: recentListings[i] });
+    if (problems[i]) feedItems.push({ kind: 'problem', data: problems[i] });
+  }
+
+  const hasFeedContent = feedItems.length > 0 || !!featuredCar;
+
   return (
     <div>
       <HomeHero />
 
-      {(recentListings.length > 0 || featuredCar) && (
+      {hasFeedContent && (
         <section className="pt-2">
-          <div className="flex items-center justify-between px-4 pb-2">
-            <h2 className="text-[15px] font-bold text-zinc-300">🛒 Al-Sat'tan</h2>
-            <Link href="/al-sat" className="text-[12px] font-semibold text-accent2">
-              Tümünü Gör
-            </Link>
+          <div className="flex items-center justify-between px-4 pb-1.5">
+            <h2 className="text-[15px] font-bold text-zinc-300">🔥 Haftanın Öne Çıkanları</h2>
           </div>
+          <div className="scrollbar-none mb-2 flex items-center gap-2 overflow-x-auto px-4 pb-2">
+            <Link
+              href="/al-sat"
+              className="shrink-0 text-[12px] font-semibold text-accent2"
+            >
+              Tüm İlanlar →
+            </Link>
+            <Link
+              href="/sorular"
+              className="shrink-0 text-[12px] font-semibold text-accent2"
+            >
+              Tüm Sorular →
+            </Link>
+            <Link
+              href="/vitrin"
+              className="shrink-0 text-[12px] font-semibold text-accent2"
+            >
+              Galeri →
+            </Link>
+            <span className="ml-auto flex shrink-0 gap-1.5">
+              <Link
+                href="/sorun/yeni"
+                className="rounded-lg bg-accent/10 px-2.5 py-1.5 text-[11.5px] font-bold text-accent2"
+              >
+                + Soru Sor
+              </Link>
+              <Link
+                href="/ilan/yeni"
+                className="rounded-lg bg-accent/10 px-2.5 py-1.5 text-[11.5px] font-bold text-accent2"
+              >
+                + İlan Ver
+              </Link>
+            </span>
+          </div>
+
+          <NewItemsBanner table="problems" />
+
           <div className="scrollbar-none flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-4 pb-1">
             {featuredCar && <FeaturedCarCard car={featuredCar} />}
-            {recentListings.map((listing) => (
-              <ListingCarouselCard key={listing.id} listing={listing} />
-            ))}
+            {feedItems.map((item) =>
+              item.kind === 'listing' ? (
+                <ListingCarouselCard key={`l-${item.data.id}`} listing={item.data} />
+              ) : (
+                <ProblemCarouselCard key={`p-${item.data.id}`} problem={item.data} />
+              )
+            )}
           </div>
         </section>
       )}
-
-      <TopSellers sellers={topSellers.map((s: any) => ({ ...s, username: s.author_username }))} />
-
-      <SearchBox />
-      <VehicleTypeChips basePath="/" />
-      <CategoryChips basePath="/" />
-      <CategoryFollowButton />
-
-      <WeeklyShowcase bestAnswer={bestAnswer} bestListing={bestListing} />
-
-      <div className="flex items-center justify-between px-4 pb-2 pt-1">
-        <h2 className="text-[15px] font-bold text-zinc-300">Son Sorular</h2>
-        <div className="flex items-center gap-3">
-          <Link href="/sorular" className="text-[12px] font-semibold text-accent2">
-            Tümünü Gör
-          </Link>
-          <Link
-            href="/sorun/yeni"
-            className="rounded-lg bg-accent/10 px-3 py-1.5 text-[13px] font-bold text-accent2"
-          >
-            + Yeni Konu Aç
-          </Link>
-        </div>
-      </div>
-
-      <NewItemsBanner table="problems" />
 
       {error && (
         <p className="px-4 py-6 text-sm text-red-400">
@@ -218,12 +246,12 @@ export default async function HomePage({
         </p>
       )}
 
-      {!error && problems.length === 0 && (
+      {!error && !hasFeedContent && (
         <div className="mx-4 my-8 rounded-2xl border border-dashed border-border bg-card p-8 text-center">
           <div className="mb-2 text-4xl">🔧</div>
-          <h3 className="font-bold">Henüz sorun paylaşılmamış</h3>
+          <h3 className="font-bold">Henüz bir şey paylaşılmamış</h3>
           <p className="mx-auto mt-1 max-w-[260px] text-sm text-muted">
-            İlk soruyu sen sor, deneyimli RC'ciler yanıtlasın.
+            İlk soruyu sen sor ya da ilk ilanı sen ver, topluluk görsün.
           </p>
           <Link
             href="/sorun/yeni"
@@ -234,13 +262,14 @@ export default async function HomePage({
         </div>
       )}
 
-      {problems.length > 0 && (
-        <div className="scrollbar-none flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-4 pb-1">
-          {problems.map((problem) => (
-            <ProblemCarouselCard key={problem.id} problem={problem} />
-          ))}
-        </div>
-      )}
+      <TopSellers sellers={topSellers.map((s: any) => ({ ...s, username: s.author_username }))} />
+
+      <SearchBox />
+      <VehicleTypeChips basePath="/" />
+      <CategoryChips basePath="/" />
+      <CategoryFollowButton />
+
+      <WeeklyShowcase bestAnswer={bestAnswer} bestListing={bestListing} />
 
       {recentBlogPosts && recentBlogPosts.length > 0 && (
         <section className="px-4 py-3">
