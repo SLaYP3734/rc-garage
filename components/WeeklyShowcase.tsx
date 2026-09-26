@@ -17,26 +17,35 @@ type BestListing = {
   favorite_count: number;
 } | null;
 
+type BestBlogPost = {
+  slug: string;
+  title: string;
+  cover_image_url: string | null;
+  comment_count: number;
+} | null;
+
 function formatPrice(price: number | null) {
   if (price === null || price === undefined) return 'Fiyat belirtilmemiş';
   return `${new Intl.NumberFormat('tr-TR').format(price)} TL`;
 }
 
-// Ana sayfada haftanın en beğenilen cevabını ve en çok favorilenen ilanını
-// gösteren vitrin. İkisi de boşsa (henüz yeterli beğeni/favori yoksa)
-// hiçbir şey göstermiyor.
+// Ana sayfada haftanın en beğenilen cevabını, en çok favorilenen ilanını ve
+// en çok yorum alan blog yazısını gösteren vitrin. Üçü de boşsa (henüz
+// yeterli beğeni/favori/yorum yoksa) hiçbir şey göstermiyor.
 export default function WeeklyShowcase({
   bestAnswer,
-  bestListing
+  bestListing,
+  bestBlogPost
 }: {
   bestAnswer: BestAnswer;
   bestListing: BestListing;
+  bestBlogPost: BestBlogPost;
 }) {
-  if (!bestAnswer && !bestListing) return null;
+  if (!bestAnswer && !bestListing && !bestBlogPost) return null;
 
   return (
     <div className="px-4 py-3">
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
         {bestAnswer && (
           <Link
             href={`/sorun/${bestAnswer.problem_slug}`}
@@ -64,6 +73,25 @@ export default function WeeklyShowcase({
               <p className="mb-1 text-[11px] font-bold text-accent2">★ Haftanın İlanı — {bestListing.favorite_count} favori</p>
               <p className="truncate text-[13px] font-semibold text-zinc-200">{bestListing.title}</p>
               <p className="text-[12px] text-accent">{formatPrice(bestListing.price)}</p>
+            </div>
+          </Link>
+        )}
+
+        {bestBlogPost && (
+          <Link
+            href={`/blog/${bestBlogPost.slug}`}
+            className="flex items-center gap-3 rounded-2xl border border-accent/25 bg-accent/5 p-3.5"
+          >
+            {bestBlogPost.cover_image_url && (
+              <div className="relative h-[54px] w-[54px] shrink-0 overflow-hidden rounded-xl border border-border">
+                <Image src={bestBlogPost.cover_image_url} alt={bestBlogPost.title} fill className="object-cover" />
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="mb-1 text-[11px] font-bold text-accent2">
+                📖 Öne Çıkan Blog — {bestBlogPost.comment_count} yorum
+              </p>
+              <p className="truncate text-[13px] font-semibold text-zinc-200">{bestBlogPost.title}</p>
             </div>
           </Link>
         )}

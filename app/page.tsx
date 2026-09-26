@@ -54,6 +54,7 @@ export default async function HomePage({
     { data: topSellersRaw },
     { data: bestAnswerRaw },
     { data: bestListingRaw },
+    { data: bestBlogPostRaw },
     { data: recentListingsRaw },
     { data: recentBlogPosts }
   ] = await Promise.all([
@@ -82,6 +83,14 @@ export default async function HomePage({
         .gt('favorite_count', 0)
         .gte('created_at', weekAgo)
         .order('favorite_count', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('blog_posts')
+        .select('slug, title, cover_image_url, comment_count')
+        .eq('published', true)
+        .gt('comment_count', 0)
+        .order('comment_count', { ascending: false })
         .limit(1)
         .maybeSingle(),
       supabase
@@ -118,6 +127,15 @@ export default async function HomePage({
         image_url: (bestListingRaw as any).image_url,
         slug: (bestListingRaw as any).slug,
         favorite_count: (bestListingRaw as any).favorite_count
+      }
+    : null;
+
+  const bestBlogPost = bestBlogPostRaw
+    ? {
+        slug: (bestBlogPostRaw as any).slug,
+        title: (bestBlogPostRaw as any).title,
+        cover_image_url: (bestBlogPostRaw as any).cover_image_url,
+        comment_count: (bestBlogPostRaw as any).comment_count
       }
     : null;
 
@@ -247,8 +265,6 @@ export default async function HomePage({
         </div>
       )}
 
-      <RandomProblemsStrip />
-
       <TopSellers sellers={topSellers.map((s: any) => ({ ...s, username: s.author_username }))} />
 
       <SearchBox />
@@ -256,7 +272,9 @@ export default async function HomePage({
       <CategoryChips basePath="/" />
       <CategoryFollowButton />
 
-      <WeeklyShowcase bestAnswer={bestAnswer} bestListing={bestListing} />
+      <WeeklyShowcase bestAnswer={bestAnswer} bestListing={bestListing} bestBlogPost={bestBlogPost} />
+
+      <RandomProblemsStrip />
 
       {recentBlogPosts && recentBlogPosts.length > 0 && (
         <section className="px-4 py-3">

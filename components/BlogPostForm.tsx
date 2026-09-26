@@ -9,6 +9,11 @@ import RichTextEditor from '@/components/RichTextEditor';
 
 const ADMIN_USER_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
 
+// Blog paylaşım kuralları: yazı çok kısa olmasın ve içinde görsel olsun
+// (kapak fotoğrafı bu sayıya dahil değil, yazı içeriğindeki fotoğraflar).
+const MIN_CONTENT_CHARS = 300;
+const MIN_PHOTO_COUNT = 2;
+
 type ExistingPost = {
   id: string;
   slug: string;
@@ -41,6 +46,18 @@ export default function BlogPostForm({ existingPost }: { existingPost?: Existing
     }
     if (!content || content === '<p></p>') {
       setError('Yazı içeriği boş olamaz.');
+      return;
+    }
+
+    const plainText = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (plainText.length < MIN_CONTENT_CHARS) {
+      setError(`Yazı içeriği çok kısa. En az ${MIN_CONTENT_CHARS} karakter yazmalısın (şu an ${plainText.length}).`);
+      return;
+    }
+
+    const photoCount = (content.match(/<img\b/g) || []).length;
+    if (photoCount < MIN_PHOTO_COUNT) {
+      setError(`Yazı içeriğinde en az ${MIN_PHOTO_COUNT} fotoğraf olmalı (şu an ${photoCount}).`);
       return;
     }
 
@@ -146,6 +163,9 @@ export default function BlogPostForm({ existingPost }: { existingPost?: Existing
       </div>
 
       <label className="mb-1 block text-[12px] font-semibold text-muted">Yazı İçeriği</label>
+      <p className="mb-2 text-[11px] text-mutedDim">
+        En az {MIN_CONTENT_CHARS} karakter ve en az {MIN_PHOTO_COUNT} fotoğraf içermeli.
+      </p>
       <div className="mb-4">
         <RichTextEditor value={content} onChange={setContent} />
       </div>
