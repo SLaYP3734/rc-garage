@@ -36,15 +36,13 @@ export default function WeeklyShowcase({
 
   return (
     <div className="px-4 py-3">
-      <h2 className="mb-2.5 text-[15px] font-bold text-zinc-300">Haftanın Öne Çıkanları</h2>
-
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {bestAnswer && (
           <Link
             href={`/sorun/${bestAnswer.problem_slug}`}
             className="rounded-2xl border border-accent/25 bg-accent/5 p-3.5"
           >
-            <p className="mb-1.5 text-[11px] font-bold text-accent2">👍 Haftanın Cevabı — {bestAnswer.like_count} beğeni</p>
+            <p className="mb-1.5 text-[11px] font-bold text-accent2">👍 Öne Çıkan Sorun — {bestAnswer.like_count} beğeni</p>
             <p className="line-clamp-2 text-[13px] text-zinc-200">{bestAnswer.body}</p>
             <p className="mt-1.5 text-[11px] text-mutedDim">
               {bestAnswer.username || 'RC Atölyesi üyesi'} · {bestAnswer.problem_title}

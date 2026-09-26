@@ -176,7 +176,7 @@ export default async function HomePage({
       {hasFeedContent && (
         <section className="pt-2">
           <div className="flex items-center justify-between px-4 pb-1.5">
-            <h2 className="text-[15px] font-bold text-zinc-300">🔥 Haftanın Öne Çıkanları</h2>
+            <h2 className="text-[15px] font-bold text-zinc-300">Haftanın Öne Çıkanları</h2>
           </div>
           <div className="scrollbar-none mb-2 flex items-center gap-2 overflow-x-auto px-4 pb-2">
             <Link
@@ -215,7 +215,7 @@ export default async function HomePage({
 
           <NewItemsBanner table="problems" />
 
-          <div className="scrollbar-none flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-1">
+          <div className="scrollbar-none flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-1">
             {featuredCar && <FeaturedCarCard car={featuredCar} />}
             {recentListings.map((listing) => (
               <ListingCarouselCard key={listing.id} listing={listing} />
